@@ -5,6 +5,10 @@ VisualStudioVersion = 17.10.35122.118
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Client_GUI", "Client_GUI.csproj", "{73A9783C-37A9-47C9-B75F-4523E6B8AC17}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LobbyDLL", "..\LobbyDLL\LobbyDLL.csproj", "{1B487C75-2C3B-4903-8F2D-89D8CDE7BD0C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LobbyServer", "..\LobbyServer\LobbyServer.csproj", "{FD248E00-637A-4CF9-936E-FE63EA79C119}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +19,14 @@ Global
 		{73A9783C-37A9-47C9-B75F-4523E6B8AC17}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{73A9783C-37A9-47C9-B75F-4523E6B8AC17}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{73A9783C-37A9-47C9-B75F-4523E6B8AC17}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1B487C75-2C3B-4903-8F2D-89D8CDE7BD0C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1B487C75-2C3B-4903-8F2D-89D8CDE7BD0C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1B487C75-2C3B-4903-8F2D-89D8CDE7BD0C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1B487C75-2C3B-4903-8F2D-89D8CDE7BD0C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FD248E00-637A-4CF9-936E-FE63EA79C119}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FD248E00-637A-4CF9-936E-FE63EA79C119}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FD248E00-637A-4CF9-936E-FE63EA79C119}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FD248E00-637A-4CF9-936E-FE63EA79C119}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
