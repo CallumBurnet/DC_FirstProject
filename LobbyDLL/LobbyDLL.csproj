@@ -33,6 +33,8 @@
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Runtime.Serialization" />
+    <Reference Include="System.ServiceModel" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -41,12 +43,15 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Database.cs" />
+    <Compile Include="ILobbyServer.cs" />
     <Compile Include="FileStruct.cs" />
-    <Compile Include="LobbyStruct.cs" />
+    <Compile Include="InvalidFileFault.cs" />
+    <Compile Include="InvalidMessageFault.cs" />
+    <Compile Include="InvalidRoomFault.cs" />
+    <Compile Include="Room.cs" />
     <Compile Include="MessageStruct.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="UserStruct.cs" />
+    <Compile Include="UnauthorisedUserFault.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
