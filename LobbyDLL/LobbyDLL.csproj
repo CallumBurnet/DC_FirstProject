@@ -43,11 +43,12 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="IFileServer.cs" />
     <Compile Include="ILobbyServer.cs" />
     <Compile Include="FileStruct.cs" />
     <Compile Include="InvalidFileFault.cs" />
-    <Compile Include="InvalidMessageFault.cs" />
     <Compile Include="InvalidRoomFault.cs" />
+    <Compile Include="IRoomServer.cs" />
     <Compile Include="Room.cs" />
     <Compile Include="MessageStruct.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
