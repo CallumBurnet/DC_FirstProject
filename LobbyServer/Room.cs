@@ -43,7 +43,7 @@ namespace LobbyServer
 
         public void Join(string username, MessageServer messageServer)
         {
-            // Guard against unauthorised user
+            // Guard against unauthorised user at lobby-level
             if (lobby.ValidateUser(username))
             {
                 UnauthorisedUserFault fault = new UnauthorisedUserFault();
@@ -74,7 +74,7 @@ namespace LobbyServer
 
         public void Join(string username, FileServer fileServer)
         {
-            // Guard against unauthorised user
+            // Guard against unauthorised user at lobby-level
             if (lobby.ValidateUser(username))
             {
                 UnauthorisedUserFault fault = new UnauthorisedUserFault();
@@ -111,14 +111,8 @@ namespace LobbyServer
 
         public void SendPrivateMessage(string message, string from, string to)
         {
-            // Check both users exist in room, else fault
+            // Ensure the target is in the room
             if (!users.Contains(from))
-            {
-                UnauthorisedUserFault fault = new UnauthorisedUserFault();
-                fault.ProblemType = "Calling user not in lobby.";
-                throw new FaultException<UnauthorisedUserFault>(fault, new FaultReason("Calling user not in lobby."));
-            }
-            else if (!users.Contains(from))
             {
                 UserNotFoundFault fault = new UserNotFoundFault();
                 fault.ProblemType = "Target user not in lobby.";
@@ -132,14 +126,6 @@ namespace LobbyServer
 
         public void SendPublicMessage(string message, string from)
         {
-            // Check user exists in room, else fault
-            if (!users.Contains(from))
-            {
-                UnauthorisedUserFault fault = new UnauthorisedUserFault();
-                fault.ProblemType = "User not in lobby.";
-                throw new FaultException<UnauthorisedUserFault>(fault, new FaultReason("User not in lobby."));
-            }
-
             // Send the edited message to all but the origin
             List<MessageServer> filteredTargets = userConnections.Where(i => !i.Key.Equals(from)).Select(d => d.Value.MessageServer).ToList();
             RelayMessage($"{from}: {message}", filteredTargets);

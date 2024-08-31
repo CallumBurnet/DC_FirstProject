@@ -9,11 +9,19 @@ namespace LobbyServer
 {
     internal class FileServer
     {
-        private readonly Room room;
-        private readonly string username;
+        private Room room;
+        private string username;
 
-        public FileServer(string roomName, string username)
+        public FileServer()
         {
+            room = null;
+            username = "";
+        }
+
+        // Doesn't seem like it's possible to pass constructor params, so use a manual join and guards
+        public void Join(string roomName, string username)
+        {
+            // Required setup, as other methods will throw on missing room
             room = Lobby.GetInstance().FetchRoom(roomName);  // May RoomNotFoundFault
             room.Join(username, this);  // May UnauthorisedUserFault or DuplicateConnectionFault
             this.username = username;
@@ -28,6 +36,13 @@ namespace LobbyServer
 
         public void AddFile(RoomFile file)
         {
+            if (room == null || username == "")
+            {
+                UnauthorisedUserFault fault = new UnauthorisedUserFault();
+                fault.ProblemType = "User not in room.";
+                throw new FaultException<UnauthorisedUserFault>(fault, new FaultReason("User not in room."));
+            }
+
             room.AddFile(file);  // May InvalidFileFault
         }
 
@@ -38,11 +53,25 @@ namespace LobbyServer
 
         public List<string> FetchFilenames()
         {
+            if (room == null || username == "")
+            {
+                UnauthorisedUserFault fault = new UnauthorisedUserFault();
+                fault.ProblemType = "User not in room.";
+                throw new FaultException<UnauthorisedUserFault>(fault, new FaultReason("User not in room."));
+            }
+
             return room.FetchFilenames();
         }
 
         public RoomFile FetchFile(string filename)
         {
+            if (room == null || username == "")
+            {
+                UnauthorisedUserFault fault = new UnauthorisedUserFault();
+                fault.ProblemType = "User not in room.";
+                throw new FaultException<UnauthorisedUserFault>(fault, new FaultReason("User not in room."));
+            }
+
             return room.FetchFile(filename);  // May InvalidFileFault
         }
     }

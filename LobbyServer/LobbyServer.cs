@@ -12,31 +12,50 @@ namespace LobbyServer
     [ServiceBehavior(ConcurrencyMode = ConcurrencyMode.Multiple, UseSynchronizationContext = false)]
     internal class LobbyServer : ILobbyServer
     {
-        // Using hashmaps, because we expect to search more than we edit
-        // And because our removals require searches, too...
         private readonly Lobby lobby;
-        private readonly string username;
+        private string username;
 
-        public LobbyServer(string username)
+        public LobbyServer()
         {
             lobby = Lobby.GetInstance();  // Grab the internal singleton ref
-            lobby.Join(username, this);  // May UnauthorisedUserFault
+            username = "";
+        }
+
+        // Doesn't seem like it's possible to pass constructor params, so use a manual join and guards
+        public void Join(string username)
+        {
+            // Required setup, as other methods will throw unauthorised if not done
+            lobby.Join(username, this);  // May UnauthorisedUserFault if duplicate
             this.username = username;
         }
 
-        public void Leave(string username)
+        public void Leave()
         {
             lobby.Leave(username);
             // Extra disconnect logic should go here, though I think they would already be deauthorised...
         }
 
-        public void MakeRoom(string roomName, string owner)
+        public void MakeRoom(string roomName)
         {
-            lobby.MakeRoom(roomName, owner);
+            if (!lobby.ValidateUser(username))
+            {
+                UnauthorisedUserFault fault = new UnauthorisedUserFault();
+                fault.ProblemType = "User not in lobby.";
+                throw new FaultException<UnauthorisedUserFault>(fault, new FaultReason("User not in lobby."));
+            }
+
+            lobby.MakeRoom(roomName, username);
         }
 
         public void FetchRoomData(out List<string> roomNames, out List<uint> userCounts)
         {
+            if (!lobby.ValidateUser(username))
+            {
+                UnauthorisedUserFault fault = new UnauthorisedUserFault();
+                fault.ProblemType = "User not in lobby.";
+                throw new FaultException<UnauthorisedUserFault>(fault, new FaultReason("User not in lobby."));
+            }
+
             lobby.FetchRoomData(out roomNames, out userCounts);
         }
     }

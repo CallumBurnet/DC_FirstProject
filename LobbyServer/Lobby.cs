@@ -18,7 +18,7 @@ namespace LobbyServer
         private Lobby() { }
         public static Lobby GetInstance() { return instance; }
 
-        internal bool ValidateUser(string username)
+        public bool ValidateUser(string username)
         {
             // Check that the user exists at lobby-level
             return userConnections.ContainsKey(username);
@@ -26,7 +26,19 @@ namespace LobbyServer
 
         public void Join(string username, LobbyServer lobbyServer)
         {
-            if (userConnections.ContainsKey(username))
+            if (username == "")
+            {
+                // Guard against known "unassigned" state
+                UnauthorisedUserFault fault = new UnauthorisedUserFault();
+                fault.ProblemType = "Username cannot be blank.";
+                throw new FaultException<UnauthorisedUserFault>(fault, new FaultReason("Username cannot be blank."));
+            }
+
+            try
+            {
+                userConnections.Add(username, lobbyServer);
+            }
+            catch (ArgumentException)
             {
                 // User not unique, so deny
                 // TODO: Might rename to UserAuthorisationFault later?
@@ -34,12 +46,6 @@ namespace LobbyServer
                 fault.ProblemType = "Username is taken.";
                 throw new FaultException<UnauthorisedUserFault>(fault, new FaultReason("Username is taken."));
             }
-            else
-            {
-                // Can add them safely
-                userConnections.Add(username, lobbyServer);
-            }
-
         }
 
         public void Leave(string username)
@@ -84,7 +90,7 @@ namespace LobbyServer
             catch (KeyNotFoundException)
             {
                 RoomNotFoundFault fault = new RoomNotFoundFault();
-                fault.ProblemType = "User not in lobby.";
+                fault.ProblemType = "Room does not exist.";
                 throw new FaultException<RoomNotFoundFault>(fault, new FaultReason("Room does not exist."));
             }
         }
