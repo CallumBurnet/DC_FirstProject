@@ -28,6 +28,13 @@ namespace LobbyServer
             this.username = username;
         }
 
+        // All these just forward the internal logic and should be one-way
+        public void Leave()
+        {
+            room.Leave(username);
+            // Extra disconnect logic should go here, though I think they would already be deauthorised...
+        }
+
         public List<string> FetchRoomUsers()
         {
             if (room == null || username == "")
@@ -39,13 +46,6 @@ namespace LobbyServer
 
             // For user reference when private messaging
             return room.Users();
-        }
-
-        // All these just forward the internal logic and should be one-way
-        public void Leave()
-        {
-            room.Leave(username);
-            // Extra disconnect logic should go here, though I think they would already be deauthorised...
         }
 
         public void SendPrivateMessage(string message, string from, string to)
