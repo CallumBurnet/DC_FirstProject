@@ -89,9 +89,9 @@ namespace LobbyServer
             }
             catch (KeyNotFoundException)
             {
-                RoomNotFoundFault fault = new RoomNotFoundFault();
+                InvalidRoomFault fault = new InvalidRoomFault();
                 fault.ProblemType = "Room does not exist.";
-                throw new FaultException<RoomNotFoundFault>(fault, new FaultReason("Room does not exist."));
+                throw new FaultException<InvalidRoomFault>(fault, new FaultReason("Room does not exist."));
             }
         }
     }

@@ -22,7 +22,7 @@ namespace LobbyServer
         public void Join(string roomName, string username)
         {
             // Required setup, as other methods will throw on missing room
-            room = Lobby.GetInstance().FetchRoom(roomName);  // May RoomNotFoundFault
+            room = Lobby.GetInstance().FetchRoom(roomName);  // May InvalidRoomFault
             room.Join(username, this);  // May UnauthorisedUserFault or DuplicateConnectionFault
             this.username = username;
         }

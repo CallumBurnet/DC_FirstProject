@@ -44,7 +44,7 @@ namespace LobbyServer
                 throw new FaultException<UnauthorisedUserFault>(fault, new FaultReason("User not in lobby."));
             }
 
-            lobby.MakeRoom(roomName, username);
+            lobby.MakeRoom(roomName, username);  // May InvalidRoomFault
         }
 
         public void FetchRoomData(out List<string> roomNames, out List<uint> userCounts)
