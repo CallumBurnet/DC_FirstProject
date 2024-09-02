@@ -13,7 +13,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 
-namespace Client_GUI
+namespace LobbyCLient
 {
     /// <summary>
     /// Interaction logic for MainWindow.xaml
