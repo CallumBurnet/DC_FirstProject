@@ -16,21 +16,21 @@
         <Border Grid.Column="0" BorderBrush="Black" BorderThickness="1">
             <Grid Grid.Column="0">
             <Grid.RowDefinitions>
-                <RowDefinition Height="1*"/>
-                <RowDefinition Height="5*"/>
-                <RowDefinition Height="1*"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
 
             <Viewbox Grid.Row="0">
                 <TextBlock TextWrapping="Wrap" Text="MKX Lobby" Padding="3px" FontWeight="Bold" HorizontalAlignment="Left"/>
             </Viewbox>
-            <StackPanel Grid.Row="1" Margin="0,0,0,0" Orientation="Vertical" >
-                <TextBlock Grid.Row="1" TextWrapping="Wrap" Text="All Lobbies:" Padding=" 3px" FontWeight="Bold"/>
-                <TextBlock TextWrapping="Wrap" Padding=" 3px"><Run Text="Lobb"/><Run Language="en-gb" Text="y 1"/><LineBreak/><Run Language="en-gb" Text="Lobby 2"/><LineBreak/><Run Language="en-gb" Text="Lobby 3"/></TextBlock>
+                
+            <TextBlock Grid.Row="1" TextWrapping="Wrap" Text="All Lobbies:" Padding=" 3px" FontWeight="Bold"/>
+                 
+             <ListView Name="LobbyListView" Grid.Row="2"/>  
 
-            </StackPanel>
-
-            <Button Grid.Row="2" Margin="10px">Create New Lobby...</Button>
+            <Button Grid.Row="3" Margin="10px">Create New Lobby...</Button>
 
         </Grid>
         </Border>
@@ -41,7 +41,7 @@
                 <RowDefinition Height="1*"/>
             </Grid.RowDefinitions>
             <Border Grid.Row="0" BorderBrush="Black" BorderThickness="1">
-                
+                <ListView Grid.Row="0" Name="chatView"/>
             </Border>
             <Border Grid.Row="1" BorderBrush="Black" BorderThickness="1">
 
@@ -75,14 +75,27 @@
 
                 <Border Grid.Row="1" BorderBrush="Black" BorderThickness=".5">
                 </Border>
-                
-                <TextBlock Grid.Row="0"><Run Language="en-gb" Text="Active Users:"/><LineBreak/><Run Text="User 1"/><LineBreak/><Run Text="User 2"/><LineBreak/><Run Text="User 3"/></TextBlock>
 
+                <Grid Grid.Row="0">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+                    <TextBlock Text="Active Users:" FontWeight="Bold" Grid.Row="0"/>
+                    <ListView Grid.Row="1" Name="activeUsersView"/>
+                </Grid>
+                
                 <Border Grid.Row="1" BorderBrush="Black" BorderThickness=".5">
                 </Border>
 
-                <TextBlock Grid.Row="1" Padding="3px"><Run Language="en-gb" Text="Recent Files:"/><LineBreak/><Run Language="en-gb" Text="File 1"/><LineBreak/><Run Language="en-gb" Text="File 2"/><LineBreak/><Run Language="en-gb" Text="File 3"/></TextBlock>
-
+                <Grid Grid.Row="1">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+                    <TextBlock  Grid.Row="0" Padding="3px" Text="Recent Files:" FontWeight="Bold"/>
+                    <ListView Grid.Row="1" Name="filesView"/>
+                </Grid>
 
 
             </Grid>
