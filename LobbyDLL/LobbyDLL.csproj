@@ -43,16 +43,17 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="DuplicateConnectionFault.cs" />
     <Compile Include="IFileServer.cs" />
     <Compile Include="ILobbyServer.cs" />
-    <Compile Include="FileStruct.cs" />
+    <Compile Include="RoomFile.cs" />
     <Compile Include="InvalidFileFault.cs" />
     <Compile Include="InvalidRoomFault.cs" />
-    <Compile Include="IRoomServer.cs" />
-    <Compile Include="Room.cs" />
+    <Compile Include="IMessageServer.cs" />
     <Compile Include="MessageStruct.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="UnauthorisedUserFault.cs" />
+    <Compile Include="UserNotFoundFault.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

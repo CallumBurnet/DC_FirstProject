@@ -9,17 +9,21 @@ namespace LobbyDLL
 {
     [ServiceContract(CallbackContract = typeof(IRoomServerCallback))]
 
-    public interface IRoomServer
+    public interface IMessageServer
     {
         [OperationContract]
-        void JoinRoom(string username);
+        [FaultContract(typeof(InvalidRoomFault))]
+        void Join(string roomName, string username);
         [OperationContract]
-        void LeaveRoom(string username);
+        void Leave();
 
 
         [OperationContract(IsOneWay = true)]
+        [FaultContract(typeof(DuplicateConnectionFault))]
+
         void SendPrivateMessage(string username, string from, string to);
         [OperationContract(IsOneWay = true)]
+        [FaultContract(typeof(DuplicateConnectionFault))]
         void SendPublicMessage(string username, string from);
     }
     public interface IRoomServerCallback

@@ -19,11 +19,11 @@ namespace LobbyDLL
 
         [OperationContract]
         [FaultContract(typeof(InvalidRoomFault))]   
-        void MakeRoom(String roomName, String owner);
+        void MakeRoom(string roomName, string owner);
         [OperationContract]
-        void FetchRooms(out List<string> roomNames, out List<uint> userCounts);
-        [OperationContract]
-        HashSet<string> FetchRoomUsers(string roomNames, string username);
+        [FaultContract(typeof(void))]
+        void FetchRoomData(out List<string> roomNames, out List<uint> userCounts);
+        
         
     }
 }

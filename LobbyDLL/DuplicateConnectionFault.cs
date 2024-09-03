@@ -4,23 +4,25 @@ using System.Linq;
 using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
-using System.ServiceModel;
-using System.Runtime.Serialization;
 
 namespace LobbyDLL
 {
     [DataContract]
-    public class UnauthorisedUserFault
+    public class DuplicateConnectionFault
     {
         [DataMember]
-        public string problemType { get; set; }
+        public string problemType {  get; set; }
 
 
-        public UnauthorisedUserFault() { }
-        public UnauthorisedUserFault(string problemType) { this.problemType = problemType; }
+        public DuplicateConnectionFault() { }
+        public DuplicateConnectionFault(string problemType) { this.problemType = problemType; }
         public void ProblemType(string problemType)
         {
             this.problemType = problemType;
         }
+
+  
+       
+
     }
 }
