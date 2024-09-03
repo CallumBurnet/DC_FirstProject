@@ -31,24 +31,17 @@ namespace LobbyCLient
             InitializeComponent();
             
             //Declare the channel factories for file, lobby and room channels.
-            DuplexChannelFactory<IFileServer> fileFactory;
             ChannelFactory<ILobbyServer> lobbyFactory;
-            DuplexChannelFactory<IMessageServer> roomFactory;
 
             //Set up the connection
             NetTcpBinding tcp = new NetTcpBinding();
             string URL = "net.tcp://localhost:8100/MKXLobby";
 
             //Initialise the file, lobby and room factories.
-            //Lobby and room to be duplex as goes both ways.
-            fileFactory = new DuplexChannelFactory<IFileServer>(tcp, URL);
             lobbyFactory = new ChannelFactory<ILobbyServer>(tcp, URL);
-            roomFactory = new DuplexChannelFactory<IMessageServer>(tcp, URL);
 
             //Create the factory channels.
-            fileInterface = fileFactory.CreateChannel();
             lobbyInterface = lobbyFactory.CreateChannel();
-            messageInterface = roomFactory.CreateChannel();
 
             
 
