@@ -47,7 +47,7 @@
                     <TextBlock TextWrapping="Wrap" Text="Logged in as" Padding=" 3px" />
                     <TextBlock TextWrapping="Wrap" Text="" Padding=" 3px" FontWeight="Bold" Name="userView"/>
                 </StackPanel>
-                <Button Name="newLobbyButton" Grid.Row="4" Margin="5px" >Create New Lobby...</Button>
+                <Button Name="newLobbyButton" Grid.Row="4" Margin="5px" Click="newLobbyButton_Click">Create New Lobby...</Button>
                 <Button Name="logoutButton" Grid.Row="5" Margin="5px" Click="logoutButton_Click">Logout</Button>
 
             </Grid>
@@ -74,8 +74,8 @@
                             <RowDefinition Height="*"/>
                         </Grid.RowDefinitions>
 
-                        <Button Name="sendMsgButton" Grid.Row="0" Margin="3px">Send</Button>
-                        <Button Name="attachFileButton" Grid.Row="1" Margin="3px">Attach...</Button>
+                        <Button Name="sendMsgButton" Grid.Row="0" Margin="3px" Click="sendMsg_Click">Send</Button>
+                        <Button Name="attachFileButton" Grid.Row="1" Margin="3px" Click=" attachMsg_Click">Attach...</Button>
 
                     </Grid>
                     

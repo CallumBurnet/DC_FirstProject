@@ -16,7 +16,7 @@ namespace LobbyServer
         private Dictionary<string, LobbyServer> userConnections;
         private Dictionary<string, Room> rooms;
 
-        private Lobby() { }
+        private Lobby() {        }
         public static Lobby GetInstance() { return instance; }
 
         public bool ValidateUser(string username)
@@ -34,6 +34,11 @@ namespace LobbyServer
                 // Guard against known "unassigned" state
                 fault.problemType = "Username cannot be blank.";
                 throw new FaultException<UnauthorisedUserFault>(fault, new FaultReason("Username cannot be blank."));
+            }
+
+            if (rooms == null)
+            {
+                userConnections = new Dictionary<string, LobbyServer>();
             }
 
             try

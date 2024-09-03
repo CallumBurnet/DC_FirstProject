@@ -65,6 +65,9 @@ namespace LobbyCLient
                 }
                 else
                 {
+                    //try joining with username
+                    lobbyInterface.JoinLobby(usernameBox.Text);
+
                     //collapse login screen and make main window visible
                     loginScreen.Visibility = Visibility.Collapsed;
                     mainScreen.Visibility = Visibility.Visible;
@@ -86,6 +89,33 @@ namespace LobbyCLient
             loginScreen.Visibility = Visibility.Visible;
 
         }
+
+        private void newLobbyButton_Click(Object sender, RoutedEventArgs e)
+        {
+            try
+            {
+            }
+            catch (Exception) { }
+        }
+
+        private void sendMsg_Click(Object sender, RoutedEventArgs e)
+        {
+            try
+            {
+
+            }
+            catch (Exception) { }
+        }
+
+        private void attachMsg_Click(Object sender, RoutedEventArgs e)
+        {
+            try
+            {
+
+            }
+            catch (Exception) { }
+        }
+
     }
 
 }
