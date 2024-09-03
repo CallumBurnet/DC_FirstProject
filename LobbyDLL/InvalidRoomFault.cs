@@ -10,7 +10,15 @@ namespace LobbyDLL
     [DataContract]
     public class InvalidRoomFault
     {
-        [DataMember]   
-        public string Message { get; set; } 
+        [DataMember]
+        public string problemType { get; set; }
+
+
+        public InvalidRoomFault() { }
+        public InvalidRoomFault(string problemType) { this.problemType = problemType; }
+        public void ProblemType(string problemType)
+        {
+            this.problemType = problemType;
+        }
     }
 }

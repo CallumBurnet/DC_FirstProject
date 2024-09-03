@@ -8,6 +8,15 @@ namespace LobbyDLL
     public class InvalidFileFault
     {
         [DataMember]
-        public string FileName { get; set; }   
+        public string problemType { get; set; }
+        public InvalidFileFault() { }
+        public InvalidFileFault(string problemType) { this.problemType = problemType; }
+
+        public void ProblemType(string problemType)
+        {
+            this.problemType = problemType;
+        }
+
+
     }
 }
