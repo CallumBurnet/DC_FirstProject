@@ -4,7 +4,7 @@ using System.Linq;
 using System.ServiceModel;
 using System.Text;
 using System.Threading.Tasks;
-
+using LobbyDLL;
 namespace LobbyServer
 {
     internal class FileServer
@@ -39,7 +39,7 @@ namespace LobbyServer
             if (room == null || username == "")
             {
                 UnauthorisedUserFault fault = new UnauthorisedUserFault();
-                fault.ProblemType = "User not in room.";
+                fault.problemType = "User not in room.";
                 throw new FaultException<UnauthorisedUserFault>(fault, new FaultReason("User not in room."));
             }
 
@@ -48,7 +48,7 @@ namespace LobbyServer
 
         internal void RelayFileChange()
         {
-            OperationContext.Current.GetCallbackChannel<IFileServerCallback>.FileChanged();
+            OperationContext.Current.GetCallbackChannel<IFileServerCallback>().FileChanged();
         }
 
         public List<string> FetchFilenames()
@@ -56,7 +56,7 @@ namespace LobbyServer
             if (room == null || username == "")
             {
                 UnauthorisedUserFault fault = new UnauthorisedUserFault();
-                fault.ProblemType = "User not in room.";
+                fault.problemType = "User not in room.";
                 throw new FaultException<UnauthorisedUserFault>(fault, new FaultReason("User not in room."));
             }
 
@@ -68,7 +68,7 @@ namespace LobbyServer
             if (room == null || username == "")
             {
                 UnauthorisedUserFault fault = new UnauthorisedUserFault();
-                fault.ProblemType = "User not in room.";
+                fault.problemType = "User not in room.";
                 throw new FaultException<UnauthorisedUserFault>(fault, new FaultReason("User not in room."));
             }
 

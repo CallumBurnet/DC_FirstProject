@@ -15,11 +15,11 @@ namespace LobbyDLL
         void JoinLobby(string username);
 
         [OperationContract]
-        void LeaveLobby(string username);
+        void LeaveLobby();
 
         [OperationContract]
         [FaultContract(typeof(InvalidRoomFault))]   
-        void MakeRoom(string roomName, string owner);
+        void MakeRoom(string roomName);
         [OperationContract]
         [FaultContract(typeof(void))]
         void FetchRoomData(out List<string> roomNames, out List<uint> userCounts);

@@ -29,11 +29,11 @@ namespace LobbyCLient
         public MainWindow()
         {
             InitializeComponent();
-            /*
+            
             //Declare the channel factories for file, lobby and room channels.
-            ChannelFactory<IFileServer> fileFactory;
+            DuplexChannelFactory<IFileServer> fileFactory;
             ChannelFactory<ILobbyServer> lobbyFactory;
-            ChannelFactory<IMessageServer> roomFactory;
+            DuplexChannelFactory<IMessageServer> roomFactory;
 
             //Set up the connection
             NetTcpBinding tcp = new NetTcpBinding();
@@ -41,8 +41,8 @@ namespace LobbyCLient
 
             //Initialise the file, lobby and room factories.
             //Lobby and room to be duplex as goes both ways.
-            fileFactory = new ChannelFactory<IFileServer>(tcp, URL);
-            lobbyFactory = new DuplexChannelFactory<ILobbyServer>(tcp, URL);
+            fileFactory = new DuplexChannelFactory<IFileServer>(tcp, URL);
+            lobbyFactory = new ChannelFactory<ILobbyServer>(tcp, URL);
             roomFactory = new DuplexChannelFactory<IMessageServer>(tcp, URL);
 
             //Create the factory channels.
@@ -50,7 +50,7 @@ namespace LobbyCLient
             lobbyInterface = lobbyFactory.CreateChannel();
             messageInterface = roomFactory.CreateChannel();
 
-            */
+            
 
             //Set main window as collapsed and login window as visible by default
             mainScreen.Visibility = Visibility.Collapsed;

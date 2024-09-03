@@ -47,7 +47,7 @@ namespace LobbyServer
             if (lobby.ValidateUser(username))
             {
                 UnauthorisedUserFault fault = new UnauthorisedUserFault();
-                fault.ProblemType = "User not in lobby.";
+                fault.problemType = "User not in lobby.";
                 throw new FaultException<UnauthorisedUserFault>(fault, new FaultReason("User not in lobby."));
             }
 
@@ -57,7 +57,7 @@ namespace LobbyServer
                 if (userConnections[username].MessageServer == null)
                 {
                     DuplicateConnectionFault fault = new DuplicateConnectionFault();
-                    fault.ProblemType = "User already connected to the message server.";
+                    fault.problemType = "User already connected to the message server.";
                     throw new FaultException<DuplicateConnectionFault>(fault, new FaultReason("User already connected to the message server."));
                 }
                 else
@@ -78,7 +78,7 @@ namespace LobbyServer
             if (lobby.ValidateUser(username))
             {
                 UnauthorisedUserFault fault = new UnauthorisedUserFault();
-                fault.ProblemType = "User not in lobby.";
+                fault.problemType = "User not in lobby.";
                 throw new FaultException<UnauthorisedUserFault>(fault, new FaultReason("User not in lobby."));
             }
 
@@ -88,7 +88,7 @@ namespace LobbyServer
                 if (userConnections[username].MessageServer == null)
                 {
                     DuplicateConnectionFault fault = new DuplicateConnectionFault();
-                    fault.ProblemType = "User already connected to the file server.";
+                    fault.problemType = "User already connected to the file server.";
                     throw new FaultException<DuplicateConnectionFault>(fault, new FaultReason("User already connected to the file server."));
                 }
                 else
@@ -112,10 +112,10 @@ namespace LobbyServer
         public void SendPrivateMessage(string message, string from, string to)
         {
             // Ensure the target is in the room
-            if (!users.Contains(from))
+            if (!Users().Contains(from))
             {
                 UserNotFoundFault fault = new UserNotFoundFault();
-                fault.ProblemType = "Target user not in lobby.";
+                fault.problemType = "Target user not in lobby.";
                 throw new FaultException<UserNotFoundFault>(fault, new FaultReason("Target user not in lobby."));
             }
 
@@ -145,12 +145,12 @@ namespace LobbyServer
             // Don't bother with appending a enumerator tag for dupes for now. Just throw
             try
             {
-                files.Add(file.Name, file);
+                files.Add(file.Name(), file);
             }
             catch (ArgumentException)
             {
                 InvalidFileFault fault = new InvalidFileFault();
-                fault.ProblemType = "File already exists.";
+                fault.problemType = "File already exists.";
                 throw new FaultException<InvalidFileFault>(fault, new FaultReason("File already exists."));
             }
         }
@@ -178,7 +178,7 @@ namespace LobbyServer
             catch (KeyNotFoundException)
             {
                 InvalidFileFault fault = new InvalidFileFault();
-                fault.ProblemType = "File does not exist.";
+                fault.problemType = "File does not exist.";
                 throw new FaultException<InvalidFileFault>(fault, new FaultReason("File does not exist."));
             }
         }

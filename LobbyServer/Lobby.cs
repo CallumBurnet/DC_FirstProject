@@ -1,4 +1,5 @@
-﻿using System;
+﻿using LobbyDLL;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.ServiceModel;
@@ -26,11 +27,12 @@ namespace LobbyServer
 
         public void Join(string username, LobbyServer lobbyServer)
         {
+            UnauthorisedUserFault fault = new UnauthorisedUserFault();
+
             if (username == "")
             {
                 // Guard against known "unassigned" state
-                UnauthorisedUserFault fault = new UnauthorisedUserFault();
-                fault.ProblemType = "Username cannot be blank.";
+                fault.problemType = "Username cannot be blank.";
                 throw new FaultException<UnauthorisedUserFault>(fault, new FaultReason("Username cannot be blank."));
             }
 
@@ -42,8 +44,7 @@ namespace LobbyServer
             {
                 // User not unique, so deny
                 // TODO: Might rename to UserAuthorisationFault later?
-                UnauthorisedUserFault fault = new UnauthorisedUserFault();
-                fault.ProblemType = "Username is taken.";
+                fault.problemType = "Username is taken.";
                 throw new FaultException<UnauthorisedUserFault>(fault, new FaultReason("Username is taken."));
             }
         }
@@ -65,7 +66,7 @@ namespace LobbyServer
             {
                 // Room already exists
                 InvalidRoomFault fault = new InvalidRoomFault();
-                fault.ProblemType = "Room already exists.";
+                fault.problemType = "Room already exists.";
                 throw new FaultException<InvalidRoomFault>(fault, new FaultReason("Room already exists."));
             }
         }
@@ -90,7 +91,7 @@ namespace LobbyServer
             catch (KeyNotFoundException)
             {
                 InvalidRoomFault fault = new InvalidRoomFault();
-                fault.ProblemType = "Room does not exist.";
+                fault.problemType = "Room does not exist.";
                 throw new FaultException<InvalidRoomFault>(fault, new FaultReason("Room does not exist."));
             }
         }

@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace LobbyDLL
 {
-    internal class RoomFile
+    public class RoomFile
     {
         public string name;
         public string extension;

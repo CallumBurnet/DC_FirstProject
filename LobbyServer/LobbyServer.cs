@@ -22,14 +22,14 @@ namespace LobbyServer
         }
 
         // Doesn't seem like it's possible to pass constructor params, so use a manual join and guards
-        public void Join(string username)
+        public void JoinLobby(string username)
         {
             // Required setup, as other methods will throw unauthorised if not done
             lobby.Join(username, this);  // May UnauthorisedUserFault if duplicate
             this.username = username;
         }
 
-        public void Leave()
+        public void LeaveLobby()
         {
             lobby.Leave(username);
             // Extra disconnect logic should go here, though I think they would already be deauthorised...
@@ -40,7 +40,7 @@ namespace LobbyServer
             if (!lobby.ValidateUser(username))
             {
                 UnauthorisedUserFault fault = new UnauthorisedUserFault();
-                fault.ProblemType = "User not in lobby.";
+                fault.problemType = "User not in lobby.";
                 throw new FaultException<UnauthorisedUserFault>(fault, new FaultReason("User not in lobby."));
             }
 
@@ -52,7 +52,7 @@ namespace LobbyServer
             if (!lobby.ValidateUser(username))
             {
                 UnauthorisedUserFault fault = new UnauthorisedUserFault();
-                fault.ProblemType = "User not in lobby.";
+                fault.problemType = "User not in lobby.";
                 throw new FaultException<UnauthorisedUserFault>(fault, new FaultReason("User not in lobby."));
             }
 
