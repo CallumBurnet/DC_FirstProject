@@ -43,8 +43,6 @@ namespace LobbyCLient
             //Create the factory channels.
             lobbyInterface = lobbyFactory.CreateChannel();
 
-            
-
             //Set main window as collapsed and login window as visible by default
             mainScreen.Visibility = Visibility.Collapsed;
             loginScreen.Visibility = Visibility.Visible;
@@ -67,6 +65,7 @@ namespace LobbyCLient
                 {
                     //try joining with username
                     lobbyInterface.JoinLobby(usernameBox.Text);
+                    
 
                     //collapse login screen and make main window visible
                     loginScreen.Visibility = Visibility.Collapsed;

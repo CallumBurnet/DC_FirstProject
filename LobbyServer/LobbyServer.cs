@@ -14,7 +14,7 @@ namespace LobbyServer
     {
         private readonly Lobby lobby;
         private string username;
-
+        private int counter;
         public LobbyServer()
         {
             lobby = Lobby.GetInstance();  // Grab the internal singleton ref
@@ -27,7 +27,9 @@ namespace LobbyServer
             // Required setup, as other methods will throw unauthorised if not done
             lobby.Join(username, this);  // May UnauthorisedUserFault if duplicate
             this.username = username;
+            
         }
+        
 
         public void LeaveLobby()
         {
