@@ -12,6 +12,7 @@ namespace LobbyDLL
     public interface ILobbyServer
     {
         [OperationContract]
+        [FaultContract(typeof(UnauthorisedUserFault))]
         void JoinLobby(string username);
 
         [OperationContract]
@@ -21,7 +22,7 @@ namespace LobbyDLL
         [FaultContract(typeof(InvalidRoomFault))]   
         void MakeRoom(string roomName);
         [OperationContract]
-        [FaultContract(typeof(void))]
+        // [FaultContract(typeof(void))]
         void FetchRoomData(out List<string> roomNames, out List<uint> userCounts);
         
         
