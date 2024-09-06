@@ -51,6 +51,7 @@ namespace LobbyServer
             {
                 // User not unique, so deny
                 // TODO: Might rename to UserAuthorisationFault later?
+                Console.WriteLine("Catch occured");
                 fault.problemType = "Username is taken.";
                 throw new FaultException<UnauthorisedUserFault>(fault, new FaultReason("Username is taken."));
             }
