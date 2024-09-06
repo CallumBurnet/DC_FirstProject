@@ -2,9 +2,11 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.ServiceModel;
 using System.Text;
 using System.Threading.Tasks;
+
 
 namespace LobbyServer
 {
@@ -15,8 +17,10 @@ namespace LobbyServer
         private static readonly Lobby instance = new Lobby();
         private Dictionary<string, LobbyServer> userConnections;
         private Dictionary<string, Room> rooms;
-
-        private Lobby() {        }
+        private int counter;
+        private Lobby() {
+            userConnections = new Dictionary<string, LobbyServer>();
+        }
         public static Lobby GetInstance() { return instance; }
 
         public bool ValidateUser(string username)
@@ -24,10 +28,13 @@ namespace LobbyServer
             // Check that the user exists at lobby-level
             return userConnections.ContainsKey(username);
         }
+        
+       
 
         public void Join(string username, LobbyServer lobbyServer)
         {
             UnauthorisedUserFault fault = new UnauthorisedUserFault();
+            
 
             if (username == "")
             {
@@ -36,10 +43,6 @@ namespace LobbyServer
                 throw new FaultException<UnauthorisedUserFault>(fault, new FaultReason("Username cannot be blank."));
             }
 
-            if (rooms == null)
-            {
-                userConnections = new Dictionary<string, LobbyServer>();
-            }
 
             try
             {
@@ -49,6 +52,7 @@ namespace LobbyServer
             {
                 // User not unique, so deny
                 // TODO: Might rename to UserAuthorisationFault later?
+                Console.WriteLine("Catch occured");
                 fault.problemType = "Username is taken.";
                 throw new FaultException<UnauthorisedUserFault>(fault, new FaultReason("Username is taken."));
             }
