@@ -6,7 +6,117 @@
         xmlns:local="clr-namespace:LobbyCLient"
         mc:Ignorable="d"
         Title="MainWindow" Height="450" Width="800">
+
     <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+
+        <StackPanel Name="loginScreen" Width="200px" Height="auto" VerticalAlignment="Center"  Grid.Column="0" Visibility="Collapsed">
+            <TextBlock Margin="5px" Text="Username:" />
+            <TextBox Name="usernameBox" Text="" Margin="5px"/>
+            <Button  Name="loginButton" Margin="5px" Click="loginButton_Click">Login</Button>
+            <TextBlock Name="ErrorBox" Visibility="Collapsed" TextWrapping="Wrap" Margin="5px" Text="Username taken. Please try again." Foreground="Red"/>
+        </StackPanel>
+        
+        <Grid Name="mainScreen" Grid.Column="0" Visibility="Visible">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="1*"/>
+            <ColumnDefinition Width="2*"/>
+            <ColumnDefinition Width="1*"/>
+        </Grid.ColumnDefinitions>
+
+                <Grid Grid.Column="0">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <Viewbox Grid.Row="0">
+                    <TextBlock TextWrapping="Wrap" Text="MKX Lobby" Padding="3px" FontWeight="Bold" HorizontalAlignment="Left"/>
+                </Viewbox>
+
+                <TextBlock Grid.Row="1" TextWrapping="Wrap" Text="All Lobbies:" Padding=" 3px" FontWeight="Bold"/>
+
+                <ListView Name="LobbyListView" Grid.Row="2"/>
+                <StackPanel Grid.Row="3"  Orientation="Horizontal">
+                    <TextBlock TextWrapping="Wrap" Text="Logged in as" Padding=" 3px" />
+                    <TextBlock TextWrapping="Wrap" Text="" Padding=" 3px" FontWeight="Bold" Name="userView"/>
+                </StackPanel>
+                <Button Name="newLobbyButton" Grid.Row="4" Margin="5px" Click="newLobbyButton_Click">Create New Lobby...</Button>
+                <Button Name="logoutButton" Grid.Row="5" Margin="5px" Click="logoutButton_Click">Logout</Button>
+
+            </Grid>
+
+            <Grid Grid.Column="1">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="5*"/>
+                <RowDefinition Height="1*"/>
+            </Grid.RowDefinitions>
+
+             <ListView BorderThickness="1px" BorderBrush="Black" Grid.Row="0" Name="chatView"/>
+
+                <Border BorderBrush="Black" BorderThickness="1px 0px 1px 1px" Grid.Row="1">
+                    <Grid Grid.Row="1" >
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="3*"/>
+                        <ColumnDefinition Width="1*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <TextBox Name="messageBox" Grid.Column="0" Margin="3px" Text="Type Message..."/>
+                    <Grid Grid.Column="1">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+
+                        <Button Name="sendMsgButton" Grid.Row="0" Margin="3px" Click="sendMsg_Click">Send</Button>
+                        <Button Name="attachFileButton" Grid.Row="1" Margin="3px" Click=" attachMsg_Click">Attach...</Button>
+
+                    </Grid>
+                    
+                </Grid>
+                </Border>
+
+
+            </Grid>
+
+            <Grid Grid.Column="2">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+
+                <Grid Grid.Row="0">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+
+                    <TextBlock Text="Active Users:" FontWeight="Bold" Padding="3px" Grid.Row="0"/>
+                    <ListView Grid.Row="1" Name="activeUsersView"/>
+
+                </Grid>
+
+                <Grid Grid.Row="1">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+
+                        <TextBlock  Grid.Row="0" Padding="3px" Text="Recent Files:" FontWeight="Bold"/>
+                        <ListView Grid.Row="1" Name="filesView"/>
+                    </Grid>
+
+                </Grid>
+            
+
+    </Grid>
         
     </Grid>
+    
 </Window>

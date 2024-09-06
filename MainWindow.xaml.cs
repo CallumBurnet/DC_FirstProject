@@ -12,6 +12,8 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using LobbyDLL;
+using System.ServiceModel;
 
 namespace LobbyCLient
 {
@@ -20,9 +22,100 @@ namespace LobbyCLient
     /// </summary>
     public partial class MainWindow : Window
     {
+        //Declare interface variables for file, lobby and room servers.
+        private IFileServer fileInterface;
+        private ILobbyServer lobbyInterface;
+        private IMessageServer messageInterface;
         public MainWindow()
         {
             InitializeComponent();
+            
+            //Declare the channel factories for file, lobby and room channels.
+            ChannelFactory<ILobbyServer> lobbyFactory;
+
+            //Set up the connection
+            NetTcpBinding tcp = new NetTcpBinding();
+            string URL = "net.tcp://localhost:8100/MKXLobby";
+
+            //Initialise the file, lobby and room factories.
+            lobbyFactory = new ChannelFactory<ILobbyServer>(tcp, URL);
+
+            //Create the factory channels.
+            lobbyInterface = lobbyFactory.CreateChannel();
+
+            
+
+            //Set main window as collapsed and login window as visible by default
+            mainScreen.Visibility = Visibility.Collapsed;
+            loginScreen.Visibility = Visibility.Visible;
         }
+
+        private void loginButton_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                //Set errorbox to hidden by default
+                ErrorBox.Visibility = Visibility.Collapsed;
+
+                //get username from usernameBox and try to join lobby.
+                if (usernameBox.Text.Equals("") || usernameBox.Text.Contains(" "))
+                {
+                    ErrorBox.Text = "Username not valid. Please try again.";
+                    ErrorBox.Visibility = Visibility.Visible;
+                }
+                else
+                {
+                    //try joining with username
+                    lobbyInterface.JoinLobby(usernameBox.Text);
+
+                    //collapse login screen and make main window visible
+                    loginScreen.Visibility = Visibility.Collapsed;
+                    mainScreen.Visibility = Visibility.Visible;
+                    userView.Text = usernameBox.Text;
+                }
+                
+
+            }
+            catch (Exception ex) 
+            { 
+                ErrorBox.Text = ex.Message;
+            }
+        }
+
+        private void logoutButton_Click(Object sender, RoutedEventArgs e)
+        {
+            //collapse main window and make login screen visible
+            mainScreen.Visibility = Visibility.Collapsed;
+            loginScreen.Visibility = Visibility.Visible;
+
+        }
+
+        private void newLobbyButton_Click(Object sender, RoutedEventArgs e)
+        {
+            try
+            {
+            }
+            catch (Exception) { }
+        }
+
+        private void sendMsg_Click(Object sender, RoutedEventArgs e)
+        {
+            try
+            {
+
+            }
+            catch (Exception) { }
+        }
+
+        private void attachMsg_Click(Object sender, RoutedEventArgs e)
+        {
+            try
+            {
+
+            }
+            catch (Exception) { }
+        }
+
     }
+
 }
