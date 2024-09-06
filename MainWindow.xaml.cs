@@ -56,7 +56,7 @@ namespace LobbyCLient
                 ErrorBox.Visibility = Visibility.Collapsed;
 
                 //get username from usernameBox and try to join lobby.
-                if (usernameBox.Text.Equals("") || usernameBox.Text.Contains(" "))
+                /*if (usernameBox.Text.Equals("") || usernameBox.Text.Contains(" "))
                 {
                     ErrorBox.Text = "Username not valid. Please try again.";
                     ErrorBox.Visibility = Visibility.Visible;
@@ -71,21 +71,35 @@ namespace LobbyCLient
                     loginScreen.Visibility = Visibility.Collapsed;
                     mainScreen.Visibility = Visibility.Visible;
                     userView.Text = usernameBox.Text;
-                }
-                
+                }*/
 
+                //try joining with username
+                lobbyInterface.JoinLobby(usernameBox.Text);
+
+                //collapse login screen and make main window visible
+                loginScreen.Visibility = Visibility.Collapsed;
+                mainScreen.Visibility = Visibility.Visible;
+                userView.Text = usernameBox.Text;
+            }
+            catch (FaultException<UnauthorisedUserFault> ex)
+            {
+                ErrorBox.Text = ex.Message + "Please try again.";
             }
             catch (Exception ex) 
             { 
-                ErrorBox.Text = ex.Message;
+                ErrorBox.Text = "Please try again.";
             }
         }
 
         private void logoutButton_Click(Object sender, RoutedEventArgs e)
         {
+            //leave lobby
+            lobbyInterface.LeaveLobby();
             //collapse main window and make login screen visible
             mainScreen.Visibility = Visibility.Collapsed;
             loginScreen.Visibility = Visibility.Visible;
+
+
 
         }
 
@@ -93,6 +107,23 @@ namespace LobbyCLient
         {
             try
             {
+                //make lobby textbox visible
+                newLobbyButton.Visibility = Visibility.Collapsed;
+                NewLobbyOption.Visibility= Visibility.Visible;
+            }
+            catch (Exception) { }
+        }
+
+        private void newLobbyOption_Click(Object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                //add new room
+                lobbyInterface.MakeRoom(lobbyNameBox.Text);
+
+                //hide lobby textbox
+                newLobbyButton.Visibility = Visibility.Collapsed;
+                NewLobbyOption.Visibility = Visibility.Visible;
             }
             catch (Exception) { }
         }
@@ -115,6 +146,10 @@ namespace LobbyCLient
             catch (Exception) { }
         }
 
+        private void lobbyNameGo_Click(object sender, RoutedEventArgs e)
+        {
+
+        }
     }
 
 }

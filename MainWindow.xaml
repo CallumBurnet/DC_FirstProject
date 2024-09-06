@@ -47,7 +47,15 @@
                     <TextBlock TextWrapping="Wrap" Text="Logged in as" Padding=" 3px" />
                     <TextBlock TextWrapping="Wrap" Text="" Padding=" 3px" FontWeight="Bold" Name="userView"/>
                 </StackPanel>
-                <Button Name="newLobbyButton" Grid.Row="4" Margin="5px" Click="newLobbyButton_Click">Create New Lobby...</Button>
+                <Button Name="newLobbyButton" Grid.Row="4" Margin="5px" Click="newLobbyButton_Click" Visibility="Visible">Create New Lobby...</Button>
+                <Grid Grid.Row="4" Name="NewLobbyOption" Visibility="Collapsed">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="4*"/>
+                        <ColumnDefinition Width="1*"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBox Margin="5px" Grid.Column="0" Text="Enter Lobby Name..." Name="lobbyNameBox" />
+                    <Button Margin="5px" Grid.Column="1" Name="lobbyNameGo" Click="newLobbyOption_Click">Go!</Button>
+                </Grid>
                 <Button Name="logoutButton" Grid.Row="5" Margin="5px" Click="logoutButton_Click">Logout</Button>
 
             </Grid>
