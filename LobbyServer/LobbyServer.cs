@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.ServiceModel;  // For networking and contracts
 
 using LobbyDLL;
+using System.Diagnostics.CodeAnalysis;
 
 namespace LobbyServer
 {
@@ -14,7 +15,6 @@ namespace LobbyServer
     {
         private readonly Lobby lobby;
         private string username;
-        private int counter;
         public LobbyServer()
         {
             lobby = Lobby.GetInstance();  // Grab the internal singleton ref
@@ -60,5 +60,10 @@ namespace LobbyServer
 
             lobby.FetchRoomData(out roomNames, out userCounts);
         }
+        public string getUserName() { 
+            return this.username;
+        }
+       
+
     }
 }

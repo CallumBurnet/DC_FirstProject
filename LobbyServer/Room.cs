@@ -16,6 +16,7 @@ namespace LobbyServer
         // Should only be used within this file
         public MessageServer MessageServer = null;
         public FileServer FileServer = null;
+
     }
 
     internal class Room  // Won't move to DLL until we need it to be public

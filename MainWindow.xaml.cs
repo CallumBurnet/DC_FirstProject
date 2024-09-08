@@ -15,6 +15,9 @@ using System.Windows.Shapes;
 using LobbyDLL;
 using System.ServiceModel;
 using System.Linq.Expressions;
+using System.ServiceModel.Security;
+using System.Threading.Tasks;
+
 
 namespace LobbyCLient
 {
@@ -27,6 +30,7 @@ namespace LobbyCLient
         private IFileServer fileInterface;
         private ILobbyServer lobbyInterface;
         private IMessageServer messageInterface;
+        
         public MainWindow()
         {
             InitializeComponent();
@@ -47,6 +51,7 @@ namespace LobbyCLient
             //Set main window as collapsed and login window as visible by default
             mainScreen.Visibility = Visibility.Collapsed;
             loginScreen.Visibility = Visibility.Visible;
+            //LobbyListView.MouseDoubleClick += LobbyListView_MouseDoubleClick;
             
 
 
@@ -140,6 +145,25 @@ namespace LobbyCLient
 
 
         }
+        //private async void LobbyListView_MouseDoubleClick(object sender, MouseEventArgs e)
+        //{
+
+        //    if(LobbyListView.SelectedItem != null)
+        //    {
+        //        string roomName = LobbyListView.SelectedItem.ToString();
+        //        string userName = lobbyInterface.getUserName();
+        //        await JoinMessageServerAsync(roomName, userName);
+
+        //    }
+        //}
+        //private Task JoinMessageServerAsync(string roomName, string userName)
+        //{
+        //    return Task.Run(() =>
+        //    {
+        //        messageInterface.Join(roomName, userName);
+        //    }); 
+            
+        //}
 
         private void newLobbyButton_Click(Object sender, RoutedEventArgs e)
         {

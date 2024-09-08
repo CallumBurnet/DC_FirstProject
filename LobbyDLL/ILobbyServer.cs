@@ -24,8 +24,11 @@ namespace LobbyDLL
         [OperationContract]
         // [FaultContract(typeof(void))]
         void FetchRoomData(out List<string> roomNames, out List<uint> userCounts);
-       
-           
-        
+        [OperationContract]
+        string getUserName();
+     
+
+
+
     }
 }
