@@ -14,6 +14,7 @@ using System.Windows.Navigation;
 using System.Windows.Shapes;
 using LobbyDLL;
 using System.ServiceModel;
+using System.Linq.Expressions;
 
 namespace LobbyCLient
 {
@@ -46,6 +47,40 @@ namespace LobbyCLient
             //Set main window as collapsed and login window as visible by default
             mainScreen.Visibility = Visibility.Collapsed;
             loginScreen.Visibility = Visibility.Visible;
+            
+
+
+        }
+        private async void UpdateLobbyData()
+        {
+            await Task.Run(async () =>
+            {
+                while (true)
+                {
+                    await FetchandUpdateLobbyData();
+                    await Task.Delay(TimeSpan.FromSeconds(5));
+                }
+            });
+        }
+        private async Task FetchandUpdateLobbyData()
+        {
+            try
+            {
+                List<string> roomNames = null;
+                List<uint> userCounts = null;
+                await Task.Run(() => lobbyInterface.FetchRoomData(out roomNames, out userCounts));
+                Dispatcher.Invoke(() =>
+                {
+                    LobbyListView.ItemsSource = roomNames;
+                });
+            }
+            catch (Exception ex) {
+                Dispatcher.Invoke(() =>
+                {
+                    MessageBox.Show(ex.Message);
+                });
+
+            }
         }
 
         private void loginButton_Click(object sender, RoutedEventArgs e)
@@ -75,6 +110,9 @@ namespace LobbyCLient
 
                 //try joining with username
                 lobbyInterface.JoinLobby(usernameBox.Text);
+                UpdateLobbyData();
+
+
 
                 //collapse login screen and make main window visible
                 loginScreen.Visibility = Visibility.Collapsed;
@@ -107,6 +145,7 @@ namespace LobbyCLient
         {
             try
             {
+
                 //make lobby textbox visible
                 newLobbyButton.Visibility = Visibility.Collapsed;
                 NewLobbyOption.Visibility= Visibility.Visible;
@@ -118,14 +157,17 @@ namespace LobbyCLient
         {
             try
             {
+
                 //add new room
                 lobbyInterface.MakeRoom(lobbyNameBox.Text);
 
                 //hide lobby textbox
-                newLobbyButton.Visibility = Visibility.Collapsed;
-                NewLobbyOption.Visibility = Visibility.Visible;
+                newLobbyButton.Visibility = Visibility.Visible;
+                NewLobbyOption.Visibility = Visibility.Hidden;
+                
             }
-            catch (Exception) { }
+            catch (Exception) {
+            }
         }
 
         private void sendMsg_Click(Object sender, RoutedEventArgs e)

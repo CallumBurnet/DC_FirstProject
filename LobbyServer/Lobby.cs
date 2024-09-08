@@ -19,6 +19,7 @@ namespace LobbyServer
         private Dictionary<string, Room> rooms;
         private Lobby() {
             userConnections = new Dictionary<string, LobbyServer>();
+            rooms = new Dictionary<string, Room>();
         }
         public static Lobby GetInstance() { return instance; }
 
@@ -68,9 +69,10 @@ namespace LobbyServer
         {
             try
             {
-                rooms.Add(roomName, new Room(this, roomName, owner));
+                Room room = new Room(this, roomName, owner);
+                rooms.Add(roomName, room);
             }
-            catch (ArgumentException)
+            catch (ArgumentException e)
             {
                 // Room already exists
                 InvalidRoomFault fault = new InvalidRoomFault();
