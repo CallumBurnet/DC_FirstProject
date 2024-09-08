@@ -45,7 +45,7 @@ namespace LobbyServer
         public void Join(string username, MessageServer messageServer)
         {
             // Guard against unauthorised user at lobby-level
-            if (lobby.ValidateUser(username))
+            if (!lobby.ValidateUser(username))
             {
                 UnauthorisedUserFault fault = new UnauthorisedUserFault();
                 fault.problemType = "User not in lobby.";

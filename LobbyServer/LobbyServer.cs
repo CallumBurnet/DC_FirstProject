@@ -49,7 +49,7 @@ namespace LobbyServer
             lobby.MakeRoom(roomName, username);  // May InvalidRoomFault
         }
 
-        public void FetchRoomData(out List<string> roomNames, out List<uint> userCounts)
+        public void FetchRoomData(out List<string> roomNames, out List<uint> userCounts, out List<string> users)
         {
             if (!lobby.ValidateUser(username))
             {
@@ -58,7 +58,7 @@ namespace LobbyServer
                 throw new FaultException<UnauthorisedUserFault>(fault, new FaultReason("User not in lobby."));
             }
 
-            lobby.FetchRoomData(out roomNames, out userCounts);
+            lobby.FetchRoomData(out roomNames, out userCounts, out users);
         }
         public string getUserName() { 
             return this.username;

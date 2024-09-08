@@ -19,11 +19,9 @@ namespace LobbyDLL
 
 
         [OperationContract(IsOneWay = true)]
-        [FaultContract(typeof(DuplicateConnectionFault))]
 
         void SendPrivateMessage(string username, string from, string to);
         [OperationContract(IsOneWay = true)]
-        [FaultContract(typeof(DuplicateConnectionFault))]
         void SendPublicMessage(string username, string from);
     }
     public interface IRoomServerCallback

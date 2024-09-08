@@ -17,6 +17,7 @@ using System.ServiceModel;
 using System.Linq.Expressions;
 using System.ServiceModel.Security;
 using System.Threading.Tasks;
+using LobbyClient;
 
 
 namespace LobbyCLient
@@ -30,7 +31,8 @@ namespace LobbyCLient
         private IFileServer fileInterface;
         private ILobbyServer lobbyInterface;
         private IMessageServer messageInterface;
-        
+
+
         public MainWindow()
         {
             InitializeComponent();
@@ -45,13 +47,15 @@ namespace LobbyCLient
             //Initialise the file, lobby and room factories.
             lobbyFactory = new ChannelFactory<ILobbyServer>(tcp, URL);
 
+           
+
             //Create the factory channels.
             lobbyInterface = lobbyFactory.CreateChannel();
 
             //Set main window as collapsed and login window as visible by default
             mainScreen.Visibility = Visibility.Collapsed;
             loginScreen.Visibility = Visibility.Visible;
-            //LobbyListView.MouseDoubleClick += LobbyListView_MouseDoubleClick;
+            LobbyListView.MouseDoubleClick += LobbyListView_MouseDoubleClick;
             
 
 
@@ -73,10 +77,12 @@ namespace LobbyCLient
             {
                 List<string> roomNames = null;
                 List<uint> userCounts = null;
-                await Task.Run(() => lobbyInterface.FetchRoomData(out roomNames, out userCounts));
+                List<string> users = null;
+                await Task.Run(() => lobbyInterface.FetchRoomData(out roomNames, out userCounts, out users));
                 Dispatcher.Invoke(() =>
                 {
                     LobbyListView.ItemsSource = roomNames;
+                    activeUsersView.ItemsSource = users;
                 });
             }
             catch (Exception ex) {
@@ -87,6 +93,8 @@ namespace LobbyCLient
 
             }
         }
+      
+        
 
         private void loginButton_Click(object sender, RoutedEventArgs e)
         {
@@ -117,6 +125,14 @@ namespace LobbyCLient
                 lobbyInterface.JoinLobby(usernameBox.Text);
                 UpdateLobbyData();
 
+                //Setup the message server factory and message endpoint
+                string userName = lobbyInterface.getUserName();
+                var proxy = new MessageProxy(messageInterface, userName);
+                string messageURL = "net.tcp://localhost:8100/message";
+                NetTcpBinding binding = new NetTcpBinding();
+                ChannelFactory<IMessageServer> messageFactory;
+                messageFactory = new DuplexChannelFactory<IMessageServer>(proxy,binding, new EndpointAddress("net.tcp://localhost:8100/message"));
+                messageInterface = messageFactory.CreateChannel();
 
 
                 //collapse login screen and make main window visible
@@ -145,25 +161,26 @@ namespace LobbyCLient
 
 
         }
-        //private async void LobbyListView_MouseDoubleClick(object sender, MouseEventArgs e)
-        //{
+        // Listview click
+        private async void LobbyListView_MouseDoubleClick(object sender, MouseEventArgs e)
+        {
 
-        //    if(LobbyListView.SelectedItem != null)
-        //    {
-        //        string roomName = LobbyListView.SelectedItem.ToString();
-        //        string userName = lobbyInterface.getUserName();
-        //        await JoinMessageServerAsync(roomName, userName);
+            if(LobbyListView.SelectedItem != null)
+            {
+               string roomName = LobbyListView.SelectedItem.ToString();
+               string userName = lobbyInterface.getUserName();
+               await JoinMessageServerAsync(roomName, userName);
 
-        //    }
-        //}
-        //private Task JoinMessageServerAsync(string roomName, string userName)
-        //{
-        //    return Task.Run(() =>
-        //    {
-        //        messageInterface.Join(roomName, userName);
-        //    }); 
+            }
+        }
+        private Task JoinMessageServerAsync(string roomName, string userName) //async join - prevent ui freeze if any
+        {
+            return Task.Run(() =>
+            {
+                messageInterface.Join(roomName, userName);
+            }); 
             
-        //}
+        }
 
         private void newLobbyButton_Click(Object sender, RoutedEventArgs e)
         {
