@@ -29,7 +29,8 @@ namespace LobbyCLient
         //Declare interface variables for file, lobby and room servers.
         private IFileServer fileInterface;
         private ILobbyServer lobbyInterface;
-        private IMessageServer messageInterface;
+        private MessageProxy messageProxy;
+
 
 
         public MainWindow()
@@ -170,9 +171,8 @@ namespace LobbyCLient
         }
         private Task JoinMessageServerAsync(string roomName, string userName) //async join - prevent ui freeze if any
         {
-            return Task.Run(() =>
-            {  var proxy = new MessageProxy(userName, roomName);
-                
+            return Task.Run(() => { 
+                messageProxy = new MessageProxy(userName, roomName);
             }); 
             
         }
