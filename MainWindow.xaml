@@ -67,7 +67,7 @@
                 <RowDefinition Height="50px"/>
             </Grid.RowDefinitions>
                 <Border BorderBrush="Black" BorderThickness="1px 1px 1px 0px" Grid.Row="0">
-                    <TextBox Name="roomNameBox" FontWeight="Bold" Grid.Row="0" Margin="3px" Text="Welcome. Please select lobby to join."/>
+                    <TextBlock Name="roomNameBox" FontWeight="Bold" Grid.Row="0" Margin="3px" Text="Welcome. Please select lobby to join."/>
                 </Border>
                 <ListView BorderThickness="1px" BorderBrush="Black" Grid.Row="1" Name="chatView" SelectionChanged="chatView_SelectionChanged"/>
 

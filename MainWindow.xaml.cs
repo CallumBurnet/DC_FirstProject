@@ -121,10 +121,12 @@ namespace LobbyCLient
             }
             catch (FaultException<UnauthorisedUserFault> ex)
             {
+                ErrorBox.Visibility = Visibility.Visible;
                 ErrorBox.Text = ex.Message + "Please try again.";
             }
             catch (Exception ee) 
             { 
+                ErrorBox.Visibility = Visibility.Visible;
                 ErrorBox.Text = "Please try again." + ee.Message;
             }
         }
