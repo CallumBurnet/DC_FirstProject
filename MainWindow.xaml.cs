@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -29,6 +29,7 @@ namespace LobbyCLient
         private IFileServer fileInterface;
         private ILobbyServer lobbyInterface;
         private MessageProxy messageProxy;
+        private Boolean loggedIn;
 
         public MainWindow()
         {
@@ -53,13 +54,16 @@ namespace LobbyCLient
 
             //Create a listener for the double click on a room
             LobbyListView.MouseDoubleClick += LobbyListView_MouseDoubleClick;
+
+            disableSendUI(true);
         }
 
         private async void UpdateLobbyData()  // Thread that periodically updates the full room list
         {
+            loggedIn = true;
             await Task.Run(async () =>
             {
-                while (true)
+                while (loggedIn)
                 {
                     await FetchandUpdateLobbyData();
                     await Task.Delay(TimeSpan.FromSeconds(5)); //every 5 seconds
@@ -102,11 +106,13 @@ namespace LobbyCLient
             }
             catch (FaultException<UnauthorisedUserFault> ex)
             {
+                ErrorBox.Visibility = Visibility.Visible;
                 ErrorBox.Text = ex.Message + "Username not valid. Please try again.";
             }
-            catch (Exception)  // TODO: Should not catch all, instead debug why it fails and add a dedicated catch if reasonable
+            catch (Exception ee)  // TODO: Should not catch all, instead debug why it fails and add a dedicated catch if reasonable
             { 
-                ErrorBox.Text = "Please try again.";
+                ErrorBox.Visibility = Visibility.Visible;
+                ErrorBox.Text = "Please try again." + ee.Message;
             }
         }
 
@@ -117,6 +123,7 @@ namespace LobbyCLient
             messageProxy = null;
 
             // Leave lobby
+            loggedIn = false;
             lobbyInterface.LeaveLobby();
 
             // Collapse main window and make login screen visible
@@ -143,7 +150,9 @@ namespace LobbyCLient
                 await Task.Run(() => {  // Prevent any UI freeze
                     messageProxy = new MessageProxy(userName, roomName, this);
                 });
+                roomNameBox.Text = LobbyListView.SelectedItem.ToString();  // Update room name label
             }
+            disableSendUI(false);
         }
 
         private void newLobbyButton_Click(Object sender, RoutedEventArgs e)
@@ -189,6 +198,18 @@ namespace LobbyCLient
         private void lobbyNameGo_Click(object sender, RoutedEventArgs e)
         {
 
+        }
+
+        private void chatView_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+
+        }
+
+        private void disableSendUI(Boolean option)
+        {
+            sendMsgButton.Dispatcher.BeginInvoke(new Action(() => { sendMsgButton.IsEnabled = !option; }));
+            attachFileButton.Dispatcher.BeginInvoke(new Action(() => { attachFileButton.IsEnabled = !option; }));
+            messageBox.Dispatcher.BeginInvoke(new Action(() => {  messageBox.IsEnabled = !option; }));
         }
     }
 
