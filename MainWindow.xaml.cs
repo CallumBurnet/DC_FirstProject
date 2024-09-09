@@ -30,6 +30,7 @@ namespace LobbyCLient
         private IFileServer fileInterface;
         private ILobbyServer lobbyInterface;
         private MessageProxy messageProxy;
+        private Boolean loggedIn;
 
 
 
@@ -58,15 +59,16 @@ namespace LobbyCLient
 
             //Create a listener for the double click on a room
             LobbyListView.MouseDoubleClick += LobbyListView_MouseDoubleClick;
-            
 
+            disableSendUI(true);
 
         }
         private async void UpdateLobbyData() //async implementation of updating the lobby data
         {
+            loggedIn = true;
             await Task.Run(async () =>
             {
-                while (true)
+                while (loggedIn)
                 {
                     await FetchandUpdateLobbyData();
                     await Task.Delay(TimeSpan.FromSeconds(5)); //every 5 seconds
@@ -105,24 +107,6 @@ namespace LobbyCLient
                 //Set errorbox to hidden by default
                 ErrorBox.Visibility = Visibility.Collapsed;
 
-                //get username from usernameBox and try to join lobby.
-                /*if (usernameBox.Text.Equals("") || usernameBox.Text.Contains(" "))
-                {
-                    ErrorBox.Text = "Username not valid. Please try again.";
-                    ErrorBox.Visibility = Visibility.Visible;
-                }
-                else
-                {
-                    //try joining with username
-                    lobbyInterface.JoinLobby(usernameBox.Text);
-                    
-
-                    //collapse login screen and make main window visible
-                    loginScreen.Visibility = Visibility.Collapsed;
-                    mainScreen.Visibility = Visibility.Visible;
-                    userView.Text = usernameBox.Text;
-                }*/
-
                 //try joining with username
                 lobbyInterface.JoinLobby(usernameBox.Text);
                 UpdateLobbyData();
@@ -137,16 +121,19 @@ namespace LobbyCLient
             }
             catch (FaultException<UnauthorisedUserFault> ex)
             {
+                ErrorBox.Visibility = Visibility.Visible;
                 ErrorBox.Text = ex.Message + "Please try again.";
             }
-            catch (Exception ex) 
+            catch (Exception ee) 
             { 
-                ErrorBox.Text = "Please try again.";
+                ErrorBox.Visibility = Visibility.Visible;
+                ErrorBox.Text = "Please try again." + ee.Message;
             }
         }
 
         private void logoutButton_Click(Object sender, RoutedEventArgs e)
         {
+            loggedIn = false;
             //leave lobby
             lobbyInterface.LeaveLobby();
             //collapse main window and make login screen visible
@@ -166,8 +153,10 @@ namespace LobbyCLient
                string userName = lobbyInterface.Username; //Lobby interface method to return username
                string roomName = LobbyListView.SelectedItem.ToString();
                await JoinMessageServerAsync(roomName, userName);
+                roomNameBox.Text = LobbyListView.SelectedItem.ToString();
 
             }
+            disableSendUI(false);
         }
         private Task JoinMessageServerAsync(string roomName, string userName) //async join - prevent ui freeze if any
         {
@@ -227,6 +216,18 @@ namespace LobbyCLient
         private void lobbyNameGo_Click(object sender, RoutedEventArgs e)
         {
 
+        }
+
+        private void chatView_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+
+        }
+
+        private void disableSendUI(Boolean option)
+        {
+            sendMsgButton.Dispatcher.BeginInvoke(new Action(() => { sendMsgButton.IsEnabled = !option; }));
+            attachFileButton.Dispatcher.BeginInvoke(new Action(() => { attachFileButton.IsEnabled = !option; }));
+            messageBox.Dispatcher.BeginInvoke(new Action(() => {  messageBox.IsEnabled = !option; }));
         }
     }
 
