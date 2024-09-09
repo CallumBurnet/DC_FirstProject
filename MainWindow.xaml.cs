@@ -15,7 +15,6 @@ using System.Windows.Shapes;
 using LobbyDLL;
 using System.ServiceModel;
 using System.Linq.Expressions;
-using System.ServiceModel.Security;
 using System.Threading.Tasks;
 using LobbyClient;
 
@@ -55,19 +54,21 @@ namespace LobbyCLient
             //Set main window as collapsed and login window as visible by default
             mainScreen.Visibility = Visibility.Collapsed;
             loginScreen.Visibility = Visibility.Visible;
+
+            //Create a listener for the double click on a room
             LobbyListView.MouseDoubleClick += LobbyListView_MouseDoubleClick;
             
 
 
         }
-        private async void UpdateLobbyData()
+        private async void UpdateLobbyData() //async implementation of updating the lobby data
         {
             await Task.Run(async () =>
             {
                 while (true)
                 {
                     await FetchandUpdateLobbyData();
-                    await Task.Delay(TimeSpan.FromSeconds(5));
+                    await Task.Delay(TimeSpan.FromSeconds(5)); //every 5 seconds
                 }
             });
         }
@@ -78,11 +79,11 @@ namespace LobbyCLient
                 List<string> roomNames = null;
                 List<uint> userCounts = null;
                 List<string> users = null;
-                await Task.Run(() => lobbyInterface.FetchRoomData(out roomNames, out userCounts, out users));
+                await Task.Run(() => lobbyInterface.FetchRoomData(out roomNames, out userCounts, out users)); //fetches the lobby data as a task
                 Dispatcher.Invoke(() =>
                 {
-                    LobbyListView.ItemsSource = roomNames;
-                    activeUsersView.ItemsSource = users;
+                    LobbyListView.ItemsSource = roomNames; //sets the listview content
+                    activeUsersView.ItemsSource = users; //sets the user listview content
                 });
             }
             catch (Exception ex) {
@@ -125,13 +126,15 @@ namespace LobbyCLient
                 lobbyInterface.JoinLobby(usernameBox.Text);
                 UpdateLobbyData();
 
-                //Setup the message server factory and message endpoint
-                string userName = lobbyInterface.getUserName();
-                var proxy = new MessageProxy(messageInterface, userName);
-                string messageURL = "net.tcp://localhost:8100/message";
+                //Create the message server factory 
+                
+                string userName = lobbyInterface.Username; //Lobby interface method to return username
+                var proxy = new MessageProxy(messageInterface, userName); //create message proxy
+
+                string messageURL = "net.tcp://localhost:8100/message"; // Sets the endpoint
                 NetTcpBinding binding = new NetTcpBinding();
                 ChannelFactory<IMessageServer> messageFactory;
-                messageFactory = new DuplexChannelFactory<IMessageServer>(proxy,binding, new EndpointAddress("net.tcp://localhost:8100/message"));
+                messageFactory = new DuplexChannelFactory<IMessageServer>(proxy,binding, new EndpointAddress("net.tcp://localhost:8100/message")); //message factory
                 messageInterface = messageFactory.CreateChannel();
 
 
@@ -162,13 +165,14 @@ namespace LobbyCLient
 
         }
         // Listview click
-        private async void LobbyListView_MouseDoubleClick(object sender, MouseEventArgs e)
+        private async void LobbyListView_MouseDoubleClick(object sender, MouseEventArgs e) //Implementation of the double click listview listener
         {
 
             if(LobbyListView.SelectedItem != null)
-            {
+            { 
+                //Room selection
                string roomName = LobbyListView.SelectedItem.ToString();
-               string userName = lobbyInterface.getUserName();
+               string userName = lobbyInterface.Username;
                await JoinMessageServerAsync(roomName, userName);
 
             }

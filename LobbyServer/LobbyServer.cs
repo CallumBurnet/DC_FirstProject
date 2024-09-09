@@ -4,10 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.ServiceModel;  // For networking and contracts
-
 using LobbyDLL;
-using System.Diagnostics.CodeAnalysis;
-
 namespace LobbyServer
 {
     [ServiceBehavior(ConcurrencyMode = ConcurrencyMode.Multiple, UseSynchronizationContext = false)]
@@ -60,8 +57,9 @@ namespace LobbyServer
 
             lobby.FetchRoomData(out roomNames, out userCounts, out users);
         }
-        public string getUserName() { 
-            return this.username;
+        public string Username
+        {
+            get { return username; }
         }
        
 
