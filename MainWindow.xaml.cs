@@ -12,10 +12,9 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
-using LobbyDLL;
 using System.ServiceModel;
-using System.Linq.Expressions;
-using System.Threading.Tasks;
+
+using LobbyDLL;
 using LobbyClient;
 
 
@@ -31,8 +30,6 @@ namespace LobbyCLient
         private ILobbyServer lobbyInterface;
         private MessageProxy messageProxy;
 
-
-
         public MainWindow()
         {
             InitializeComponent();
@@ -47,8 +44,6 @@ namespace LobbyCLient
             //Initialise the file, lobby and room factories.
             lobbyFactory = new ChannelFactory<ILobbyServer>(tcp, URL);
 
-           
-
             //Create the factory channels.
             lobbyInterface = lobbyFactory.CreateChannel();
 
@@ -58,11 +53,9 @@ namespace LobbyCLient
 
             //Create a listener for the double click on a room
             LobbyListView.MouseDoubleClick += LobbyListView_MouseDoubleClick;
-            
-
-
         }
-        private async void UpdateLobbyData() //async implementation of updating the lobby data
+
+        private async void UpdateLobbyData()  // Thread that periodically updates the full room list
         {
             await Task.Run(async () =>
             {
@@ -73,30 +66,23 @@ namespace LobbyCLient
                 }
             });
         }
+
         private async Task FetchandUpdateLobbyData()
         {
             try
             {
                 List<string> roomNames = null;
                 List<uint> userCounts = null;
-                List<string> users = null;
-                await Task.Run(() => lobbyInterface.FetchRoomData(out roomNames, out userCounts, out users)); //fetches the lobby data as a task
-                Dispatcher.Invoke(() =>
-                {
-                    LobbyListView.ItemsSource = roomNames; //sets the listview content
-                    activeUsersView.ItemsSource = users; //sets the user listview content
-                });
+                await Task.Run(() => lobbyInterface.FetchRoomData(out roomNames, out userCounts)); //fetches the lobby data as a task
+                Dispatcher.Invoke(() => LobbyListView.ItemsSource = roomNames);
             }
             catch (Exception ex) {
                 Dispatcher.Invoke(() =>
                 {
                     MessageBox.Show(ex.Message);
                 });
-
             }
         }
-      
-        
 
         private void loginButton_Click(object sender, RoutedEventArgs e)
         {
@@ -105,30 +91,9 @@ namespace LobbyCLient
                 //Set errorbox to hidden by default
                 ErrorBox.Visibility = Visibility.Collapsed;
 
-                //get username from usernameBox and try to join lobby.
-                /*if (usernameBox.Text.Equals("") || usernameBox.Text.Contains(" "))
-                {
-                    ErrorBox.Text = "Username not valid. Please try again.";
-                    ErrorBox.Visibility = Visibility.Visible;
-                }
-                else
-                {
-                    //try joining with username
-                    lobbyInterface.JoinLobby(usernameBox.Text);
-                    
-
-                    //collapse login screen and make main window visible
-                    loginScreen.Visibility = Visibility.Collapsed;
-                    mainScreen.Visibility = Visibility.Visible;
-                    userView.Text = usernameBox.Text;
-                }*/
-
                 //try joining with username
                 lobbyInterface.JoinLobby(usernameBox.Text);
                 UpdateLobbyData();
-
-                //Create the message server factory 
-                
 
                 //collapse login screen and make main window visible
                 loginScreen.Visibility = Visibility.Collapsed;
@@ -137,9 +102,9 @@ namespace LobbyCLient
             }
             catch (FaultException<UnauthorisedUserFault> ex)
             {
-                ErrorBox.Text = ex.Message + "Please try again.";
+                ErrorBox.Text = ex.Message + "Username not valid. Please try again.";
             }
-            catch (Exception ex) 
+            catch (Exception)  // TODO: Should not catch all, instead debug why it fails and add a dedicated catch if reasonable
             { 
                 ErrorBox.Text = "Please try again.";
             }
@@ -147,60 +112,57 @@ namespace LobbyCLient
 
         private void logoutButton_Click(Object sender, RoutedEventArgs e)
         {
-            //leave lobby
+            // Leave existing room
+            messageProxy?.Leave();
+            messageProxy = null;
+
+            // Leave lobby
             lobbyInterface.LeaveLobby();
-            //collapse main window and make login screen visible
+
+            // Collapse main window and make login screen visible
             mainScreen.Visibility = Visibility.Collapsed;
             loginScreen.Visibility = Visibility.Visible;
 
-
-
+            // TODO: Call leave on message and file servers and set them to null locally 
+            // TODO: Send cancellation token to the lobby periodic updater
         }
+
         // Listview click
         private async void LobbyListView_MouseDoubleClick(object sender, MouseEventArgs e) //Implementation of the double click listview listener
         {
 
             if(LobbyListView.SelectedItem != null)
             {
-                //Room selection
-               string userName = lobbyInterface.Username; //Lobby interface method to return username
-               string roomName = LobbyListView.SelectedItem.ToString();
-               await JoinMessageServerAsync(roomName, userName);
+                // Leave existing room
+                messageProxy?.Leave();
+                messageProxy = null;  // Let it GC
 
+                // Room selection
+                string userName = lobbyInterface.Username; // Lobby interface method to return username
+                string roomName = LobbyListView.SelectedItem.ToString();
+                await Task.Run(() => {  // Prevent any UI freeze
+                    messageProxy = new MessageProxy(userName, roomName, this);
+                });
             }
-        }
-        private Task JoinMessageServerAsync(string roomName, string userName) //async join - prevent ui freeze if any
-        {
-            return Task.Run(() => { 
-                messageProxy = new MessageProxy(userName, roomName);
-            }); 
-            
         }
 
         private void newLobbyButton_Click(Object sender, RoutedEventArgs e)
         {
-            try
-            {
-
-                //make lobby textbox visible
-                newLobbyButton.Visibility = Visibility.Collapsed;
-                NewLobbyOption.Visibility= Visibility.Visible;
-            }
-            catch (Exception) { }
+            // Make lobby textbox visible
+            newLobbyButton.Visibility = Visibility.Collapsed;
+            NewLobbyOption.Visibility = Visibility.Visible;
         }
 
         private void newLobbyOption_Click(Object sender, RoutedEventArgs e)
         {
             try
             {
-
                 //add new room
                 lobbyInterface.MakeRoom(lobbyNameBox.Text);
 
                 //hide lobby textbox
                 newLobbyButton.Visibility = Visibility.Visible;
                 NewLobbyOption.Visibility = Visibility.Hidden;
-                
             }
             catch (Exception) {
             }
