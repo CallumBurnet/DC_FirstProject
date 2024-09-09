@@ -128,15 +128,6 @@ namespace LobbyCLient
 
                 //Create the message server factory 
                 
-                string userName = lobbyInterface.Username; //Lobby interface method to return username
-                var proxy = new MessageProxy(messageInterface, userName); //create message proxy
-
-                string messageURL = "net.tcp://localhost:8100/message"; // Sets the endpoint
-                NetTcpBinding binding = new NetTcpBinding();
-                ChannelFactory<IMessageServer> messageFactory;
-                messageFactory = new DuplexChannelFactory<IMessageServer>(proxy,binding, new EndpointAddress("net.tcp://localhost:8100/message")); //message factory
-                messageInterface = messageFactory.CreateChannel();
-
 
                 //collapse login screen and make main window visible
                 loginScreen.Visibility = Visibility.Collapsed;
@@ -169,10 +160,10 @@ namespace LobbyCLient
         {
 
             if(LobbyListView.SelectedItem != null)
-            { 
+            {
                 //Room selection
+               string userName = lobbyInterface.Username; //Lobby interface method to return username
                string roomName = LobbyListView.SelectedItem.ToString();
-               string userName = lobbyInterface.Username;
                await JoinMessageServerAsync(roomName, userName);
 
             }
@@ -180,8 +171,8 @@ namespace LobbyCLient
         private Task JoinMessageServerAsync(string roomName, string userName) //async join - prevent ui freeze if any
         {
             return Task.Run(() =>
-            {
-                messageInterface.Join(roomName, userName);
+            {  var proxy = new MessageProxy(userName, roomName);
+                
             }); 
             
         }
