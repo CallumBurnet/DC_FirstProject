@@ -16,6 +16,9 @@ namespace LobbyDLL
         void Join(string roomName, string username);
         [OperationContract]
         void Leave();
+        [OperationContract]
+        [FaultContract(typeof(UnauthorisedUserFault))]
+        List<string> FetchRoomUsers();
 
 
         [OperationContract(IsOneWay = true)]

@@ -81,16 +81,14 @@ namespace LobbyServer
             }
         }
 
-        public void FetchRoomData(out List<string> roomNames, out List<uint> userCounts, out List<string> users)
+        public void FetchRoomData(out List<string> roomNames, out List<uint> userCounts)
         {
             roomNames = new List<string>();
             userCounts = new List<uint>();
-            users = new List<string>();
             foreach (KeyValuePair<string, Room> entry in rooms)
             {
                 roomNames.Add(entry.Key);
                 userCounts.Add((uint)entry.Value.Users().Count());
-                users = entry.Value.Users();
             }
         }
 
