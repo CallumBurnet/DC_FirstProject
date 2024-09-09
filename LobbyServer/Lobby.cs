@@ -19,6 +19,7 @@ namespace LobbyServer
         private Dictionary<string, Room> rooms;
         private Lobby() {
             userConnections = new Dictionary<string, LobbyServer>();
+            rooms = new Dictionary<string, Room>();
         }
         public static Lobby GetInstance() { return instance; }
 
@@ -68,9 +69,10 @@ namespace LobbyServer
         {
             try
             {
-                rooms.Add(roomName, new Room(this, roomName, owner));
+                Room room = new Room(this, roomName, owner);
+                rooms.Add(roomName, room);
             }
-            catch (ArgumentException)
+            catch (ArgumentException e)
             {
                 // Room already exists
                 InvalidRoomFault fault = new InvalidRoomFault();
@@ -79,14 +81,16 @@ namespace LobbyServer
             }
         }
 
-        public void FetchRoomData(out List<string> roomNames, out List<uint> userCounts)
+        public void FetchRoomData(out List<string> roomNames, out List<uint> userCounts, out List<string> users)
         {
             roomNames = new List<string>();
             userCounts = new List<uint>();
+            users = new List<string>();
             foreach (KeyValuePair<string, Room> entry in rooms)
             {
                 roomNames.Add(entry.Key);
                 userCounts.Add((uint)entry.Value.Users().Count());
+                users = entry.Value.Users();
             }
         }
 

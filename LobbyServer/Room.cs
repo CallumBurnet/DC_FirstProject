@@ -16,6 +16,7 @@ namespace LobbyServer
         // Should only be used within this file
         public MessageServer MessageServer = null;
         public FileServer FileServer = null;
+
     }
 
     internal class Room  // Won't move to DLL until we need it to be public
@@ -44,7 +45,7 @@ namespace LobbyServer
         public void Join(string username, MessageServer messageServer)
         {
             // Guard against unauthorised user at lobby-level
-            if (lobby.ValidateUser(username))
+            if (!lobby.ValidateUser(username))
             {
                 UnauthorisedUserFault fault = new UnauthorisedUserFault();
                 fault.problemType = "User not in lobby.";

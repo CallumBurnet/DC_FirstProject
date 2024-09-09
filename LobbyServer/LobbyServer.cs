@@ -4,9 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.ServiceModel;  // For networking and contracts
-
 using LobbyDLL;
-
 namespace LobbyServer
 {
     [ServiceBehavior(ConcurrencyMode = ConcurrencyMode.Multiple, UseSynchronizationContext = false)]
@@ -14,7 +12,6 @@ namespace LobbyServer
     {
         private readonly Lobby lobby;
         private string username;
-        private int counter;
         public LobbyServer()
         {
             lobby = Lobby.GetInstance();  // Grab the internal singleton ref
@@ -49,7 +46,7 @@ namespace LobbyServer
             lobby.MakeRoom(roomName, username);  // May InvalidRoomFault
         }
 
-        public void FetchRoomData(out List<string> roomNames, out List<uint> userCounts)
+        public void FetchRoomData(out List<string> roomNames, out List<uint> userCounts, out List<string> users)
         {
             if (!lobby.ValidateUser(username))
             {
@@ -58,7 +55,13 @@ namespace LobbyServer
                 throw new FaultException<UnauthorisedUserFault>(fault, new FaultReason("User not in lobby."));
             }
 
-            lobby.FetchRoomData(out roomNames, out userCounts);
+            lobby.FetchRoomData(out roomNames, out userCounts, out users);
         }
+        public string Username
+        {
+            get { return username; }
+        }
+       
+
     }
 }

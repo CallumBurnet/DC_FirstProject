@@ -9,6 +9,8 @@ using LobbyDLL;
 
 namespace LobbyServer
 {
+    [ServiceBehavior(ConcurrencyMode = ConcurrencyMode.Multiple, UseSynchronizationContext = false)]
+
     internal class MessageServer : IMessageServer
     {
         private Room room;
