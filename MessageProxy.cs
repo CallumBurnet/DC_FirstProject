@@ -53,6 +53,7 @@ namespace LobbyClient
             // Clean up local threads and then unsubscribe
             cancelTokenSource.Cancel();
             server.Leave();
+            window.activeUsersView.Dispatcher.Invoke(new Action(() => window.activeUsersView.ItemsSource = null));
         }
 
         private async void UpdateUserList()  // Thread that periodically updates the active users in the current room

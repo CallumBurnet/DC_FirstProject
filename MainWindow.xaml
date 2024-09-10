@@ -109,7 +109,7 @@
                     </Grid.RowDefinitions>
 
                     <TextBlock Text="Active Users:" FontWeight="Bold" Padding="3px" Grid.Row="0"/>
-                    <ListView Grid.Row="1" Name="activeUsersView"/>
+                    <ListView Grid.Row="1" Name="activeUsersView" SelectionChanged="activeUsersView_SelectionChanged"/>
 
                 </Grid>
 

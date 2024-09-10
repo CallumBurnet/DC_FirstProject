@@ -124,7 +124,9 @@ namespace LobbyCLient
 
             // Leave lobby
             loggedIn = false;
+            disableSendUI(true);
             lobbyInterface.LeaveLobby();
+            LobbyListView.SelectedItem = null;
 
             // Collapse main window and make login screen visible
             mainScreen.Visibility = Visibility.Collapsed;
@@ -140,6 +142,7 @@ namespace LobbyCLient
 
             if(LobbyListView.SelectedItem != null)
             {
+                UpdateLobbyData();
                 // Leave existing room
                 messageProxy?.Leave();
                 messageProxy = null;  // Let it GC
@@ -168,6 +171,10 @@ namespace LobbyCLient
             {
                 //add new room
                 lobbyInterface.MakeRoom(lobbyNameBox.Text);
+                List<string> roomNames;
+                List<uint> userCount;
+                lobbyInterface.FetchRoomData(out roomNames, out userCount);
+                LobbyListView.ItemsSource = roomNames;
 
                 //hide lobby textbox
                 newLobbyButton.Visibility = Visibility.Visible;
@@ -207,9 +214,18 @@ namespace LobbyCLient
 
         private void disableSendUI(Boolean option)
         {
+            if (option)
+            {
+                roomNameBox.Dispatcher.BeginInvoke(new Action(() => { roomNameBox.Text = "Welcome. Please select lobby to join."; }));
+            }
             sendMsgButton.Dispatcher.BeginInvoke(new Action(() => { sendMsgButton.IsEnabled = !option; }));
             attachFileButton.Dispatcher.BeginInvoke(new Action(() => { attachFileButton.IsEnabled = !option; }));
             messageBox.Dispatcher.BeginInvoke(new Action(() => {  messageBox.IsEnabled = !option; }));
+        }
+
+        private void activeUsersView_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+
         }
     }
 
