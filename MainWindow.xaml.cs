@@ -182,7 +182,10 @@ namespace LobbyCLient
             }
             catch (Exception eee) 
             {
-                lobbyNameBox.Text = eee.Message;
+                Dispatcher.Invoke(() =>
+                {
+                    MessageBox.Show(eee.Message);
+                });
             }
         }
 
