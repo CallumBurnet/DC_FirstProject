@@ -49,7 +49,7 @@ namespace LobbyClient
         public void PushMessage(string message)
         {
             messageList.Add(message);
-            window.chatView.Dispatcher.Invoke(new Action(() => window.chatView.ItemsSource = message));
+            window.chatView.Dispatcher.Invoke(new Action(() => window.chatView.ItemsSource = messageList));
         }
 
         public void Leave()
