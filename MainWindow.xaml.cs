@@ -180,7 +180,9 @@ namespace LobbyCLient
                 newLobbyButton.Visibility = Visibility.Visible;
                 NewLobbyOption.Visibility = Visibility.Hidden;
             }
-            catch (Exception) {
+            catch (Exception eee) 
+            {
+                lobbyNameBox.Text = eee.Message;
             }
         }
 
