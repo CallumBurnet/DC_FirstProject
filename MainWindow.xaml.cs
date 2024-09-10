@@ -193,7 +193,7 @@ namespace LobbyCLient
         {
             try
             {
-
+                messageProxy.SendPublic(messageBox.Text);
             }
             catch (Exception) { }
         }

@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.ServiceModel;
+using System.ServiceModel.Channels;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -20,6 +21,7 @@ namespace LobbyClient
         private string username;
         private string roomName;
         private MainWindow window;
+        private List<string> messageList;
         CancellationTokenSource cancelTokenSource;  // For threading cleanup
         CancellationToken cancelToken;
 
@@ -32,6 +34,7 @@ namespace LobbyClient
             this.username = username;
             this.roomName = roomName;
             server.Join(roomName, username);
+            messageList = new List<string>();
 
             // Also periodically refresh room user list
             cancelTokenSource = new CancellationTokenSource();
@@ -45,7 +48,8 @@ namespace LobbyClient
         }
         public void PushMessage(string message)
         {
-            
+            messageList.Add(message);
+            window.chatView.Dispatcher.Invoke(new Action(() => window.chatView.ItemsSource = message));
         }
 
         public void Leave()
@@ -54,6 +58,7 @@ namespace LobbyClient
             cancelTokenSource.Cancel();
             server.Leave();
             window.activeUsersView.Dispatcher.Invoke(new Action(() => window.activeUsersView.ItemsSource = null));
+            window.chatView.Dispatcher.Invoke(new Action(() => window.chatView.ItemsSource = null));
         }
 
         private async void UpdateUserList()  // Thread that periodically updates the active users in the current room
