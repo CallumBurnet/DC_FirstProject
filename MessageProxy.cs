@@ -21,7 +21,7 @@ namespace LobbyClient
         private string username;
         private string roomName;
         private MainWindow window;
-        private List<string> messageList;
+        private List<string> messages;
         CancellationTokenSource cancelTokenSource;  // For threading cleanup
         CancellationToken cancelToken;
 
@@ -34,7 +34,7 @@ namespace LobbyClient
             this.username = username;
             this.roomName = roomName;
             server.Join(roomName, username);
-            messageList = new List<string>();
+            messages = new List<string>();
 
             // Also periodically refresh room user list
             cancelTokenSource = new CancellationTokenSource();
@@ -48,8 +48,10 @@ namespace LobbyClient
         }
         public void PushMessage(string message)
         {
-            messageList.Add(message);
-            window.chatView.Dispatcher.Invoke(new Action(() => window.chatView.ItemsSource = messageList));
+            messages.Add(message);
+            window.chatView.Dispatcher.Invoke(new Action(() => window.chatView.ItemsSource = null));
+            window.chatView.Dispatcher.Invoke(new Action(() => window.chatView.ItemsSource = messages));
+
         }
 
         public void Leave()

@@ -147,6 +147,7 @@ namespace LobbyCLient
                 messageProxy?.Leave();
                 messageProxy = null;  // Let it GC
 
+
                 // Room selection
                 string userName = lobbyInterface.Username; // Lobby interface method to return username
                 string roomName = LobbyListView.SelectedItem.ToString();
