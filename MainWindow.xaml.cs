@@ -17,6 +17,10 @@ using System.ServiceModel;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
 using LobbyClient;
+using Microsoft.Win32;
+using System.IO;
+using System.Drawing;
+
 
 
 namespace LobbyCLient
@@ -30,7 +34,9 @@ namespace LobbyCLient
         private IFileServer fileInterface;
         private ILobbyServer lobbyInterface;
         private MessageProxy messageProxy;
-
+        private FileListProxy fileListProxy;
+        private RoomFile roomFile;
+       
 
 
         public MainWindow()
@@ -62,6 +68,31 @@ namespace LobbyCLient
 
 
         }
+  
+        private async void updateFileData()
+        {
+            await Task.Run(async () =>
+            {
+                while (true)
+                {
+                    await FetchFileData();
+                    await Task.Delay(TimeSpan.FromSeconds(6)); //every 5 seconds
+
+                }
+            });
+        }
+        private async Task FetchFileData()
+        {
+            List<string> fileNames = new List<string>();
+            fileNames = await Task.Run(() => fileListProxy.FetchNewFileList());
+
+            Dispatcher.Invoke(() =>
+            {
+                filesView.ItemsSource = fileNames;
+            });
+                
+        }
+         
         private async void UpdateLobbyData() //async implementation of updating the lobby data
         {
             await Task.Run(async () =>
@@ -69,7 +100,7 @@ namespace LobbyCLient
                 while (true)
                 {
                     await FetchandUpdateLobbyData();
-                    await Task.Delay(TimeSpan.FromSeconds(5)); //every 5 seconds
+                    await Task.Delay(TimeSpan.FromSeconds(1)); //every 5 seconds
                 }
             });
         }
@@ -104,24 +135,6 @@ namespace LobbyCLient
             {
                 //Set errorbox to hidden by default
                 ErrorBox.Visibility = Visibility.Collapsed;
-
-                //get username from usernameBox and try to join lobby.
-                /*if (usernameBox.Text.Equals("") || usernameBox.Text.Contains(" "))
-                {
-                    ErrorBox.Text = "Username not valid. Please try again.";
-                    ErrorBox.Visibility = Visibility.Visible;
-                }
-                else
-                {
-                    //try joining with username
-                    lobbyInterface.JoinLobby(usernameBox.Text);
-                    
-
-                    //collapse login screen and make main window visible
-                    loginScreen.Visibility = Visibility.Collapsed;
-                    mainScreen.Visibility = Visibility.Visible;
-                    userView.Text = usernameBox.Text;
-                }*/
 
                 //try joining with username
                 lobbyInterface.JoinLobby(usernameBox.Text);
@@ -166,15 +179,27 @@ namespace LobbyCLient
                string userName = lobbyInterface.Username; //Lobby interface method to return username
                string roomName = LobbyListView.SelectedItem.ToString();
                await JoinMessageServerAsync(roomName, userName);
+               await JoinFileServerAsync(roomName, userName);
+               updateFileData();
+
 
             }
         }
-        private Task JoinMessageServerAsync(string roomName, string userName) //async join - prevent ui freeze if any
+        private async Task JoinMessageServerAsync(string roomName, string userName) //async join - prevent ui freeze if any
         {
-            return Task.Run(() => { 
+            await Task.Run(() => { 
                 messageProxy = new MessageProxy(userName, roomName);
+
             }); 
             
+        }
+        private async Task JoinFileServerAsync(string roomName, string userName) //async join - prevent ui freeze if any
+        {
+            await Task.Run(() => {
+                fileListProxy = new FileListProxy(userName, roomName, this);
+
+            });
+
         }
 
         private void newLobbyButton_Click(Object sender, RoutedEventArgs e)
@@ -210,16 +235,42 @@ namespace LobbyCLient
         {
             try
             {
-
+                if (roomFile != null && !string.IsNullOrEmpty(roomFile.name))
+                {
+                    fileListProxy.AddFile(roomFile);
+                }
+                else
+                {
+                    Console.WriteLine("Could not retrieve valid RoomFile or file name.");
+                }
             }
-            catch (Exception) { }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Exceptionss");
+                
+                
+            }
         }
+
 
         private void attachMsg_Click(Object sender, RoutedEventArgs e)
         {
             try
             {
+                OpenFileDialog openFileDialog = new OpenFileDialog();
+                openFileDialog.InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyPictures);
+                openFileDialog.Filter = "All files (*.*)|*.*";
+                if(openFileDialog.ShowDialog()== true)
+                {
+                    string selectedFilePath = openFileDialog.FileName;
+                    
+                    roomFile = createFileItem(selectedFilePath);
+                   
+                    Console.WriteLine(roomFile.name + "--  ex " + roomFile.extension + " -- file" + roomFile.file);
 
+
+
+                }
             }
             catch (Exception) { }
         }
@@ -228,6 +279,47 @@ namespace LobbyCLient
         {
 
         }
+        private RoomFile createFileItem(string filePath)
+        {
+            
+            string fileName = System.IO.Path.GetFileName(filePath);
+            string extension = fileName.Length > 3 ? fileName.Substring(fileName.Length - 4).ToLower() : "";
+
+
+            if (extension == ".png" || extension == ".jpg" || extension == ".bmp" || extension == ".gif")
+            {
+                using (FileStream stream = new FileStream(filePath, FileMode.Open, FileAccess.Read))
+                {
+                    Bitmap bitmap = new Bitmap(stream);
+                    ImageFileItem fileItem = new ImageFileItem
+                    {
+                        fileName = fileName,
+                        Bitmap = bitmap
+                    };
+                   return new RoomFile(fileName, extension, null, fileItem);
+
+                }
+
+            }
+            else if(extension == ".txt")
+            {
+                string text = File.ReadAllText(filePath);
+                TextFileItem fileItem =  new TextFileItem
+                {
+                    fileName = fileName,
+                    TextContent = text
+                };
+                return new RoomFile(fileName, extension,null , fileItem);
+            }
+            else
+            {
+                MessageBox.Show("Unsupported file Type");
+                return null;
+            }
+
+
+        }
+
     }
 
 }

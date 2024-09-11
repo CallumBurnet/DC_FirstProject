@@ -1,26 +1,33 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
+using System.Runtime.Serialization;
 
 namespace LobbyDLL
 {
+    [DataContract]
     public class RoomFile
     {
-        public string name;
-        public string extension;
-        public DateTime timeUploaded;
+        [DataMember]
+        public string name { get; set; }
 
-        public RoomFile(string name, string extension, DateTime timeUploaded)
+        [DataMember]
+        public string extension { get; set; }
+
+        [DataMember]
+        public DateTime? TimeUploaded { get; set; }
+
+        [DataMember]
+        public FileItem file { get; set; }
+
+        // Parameterless constructor required for WCF serialization
+        public RoomFile() { }
+
+        // Constructor with parameters
+        public RoomFile(string name, string extension, DateTime? timeUploaded, FileItem file)
         {
             this.name = name;
             this.extension = extension;
-            this.timeUploaded = timeUploaded;
+            this.TimeUploaded = timeUploaded;
+            this.file = file;
         }
-        public string Name() { return name; }
-        public string Extension() { return extension; }
-        public DateTime TimeUploaded() { return timeUploaded; }
     }
 }

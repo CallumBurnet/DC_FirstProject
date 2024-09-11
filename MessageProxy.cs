@@ -7,6 +7,7 @@ using System.ServiceModel;
 using System.Text;
 using System.Threading.Tasks;
 
+
 namespace LobbyClient
 {
     public class MessageProxy : IRoomServerCallback //message proxy is also the implementation of the message callback

@@ -14,20 +14,20 @@ namespace LobbyDLL
     {
         [OperationContract]
         [FaultContract(typeof(InvalidRoomFault))]
-        void Join(string roomName, string username);
+        void Join(string roomName, string userName);
         [OperationContract]
         void Leave();
 
         [OperationContract]
         [FaultContract(typeof(InvalidFileFault))]
-        void AddFile(File file);
+        void AddFile(RoomFile file);
 
         [OperationContract] //Client Implementation of Callback ~ delegate example
         [FaultContract(typeof(InvalidFileFault))]
-        HashSet<string> FetchFileNames(string username);
+        List<string> FetchFileNames();
         [OperationContract]
         [FaultContract(typeof(InvalidFileFault))]
-        File FetchFile(string username, string filename);
+        RoomFile FetchFile(string fileName);
     }
     public interface IFileServerCallback
     {

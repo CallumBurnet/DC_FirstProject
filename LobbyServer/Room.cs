@@ -76,7 +76,7 @@ namespace LobbyServer
         public void Join(string username, FileServer fileServer)
         {
             // Guard against unauthorised user at lobby-level
-            if (lobby.ValidateUser(username))
+            if (!lobby.ValidateUser(username))
             {
                 UnauthorisedUserFault fault = new UnauthorisedUserFault();
                 fault.problemType = "User not in lobby.";
@@ -146,10 +146,14 @@ namespace LobbyServer
             // Don't bother with appending a enumerator tag for dupes for now. Just throw
             try
             {
-                files.Add(file.Name(), file);
+
+                files.Add(file.name, file);
+                Console.WriteLine("ADDED");
             }
             catch (ArgumentException)
             {
+                Console.WriteLine("Failed");
+
                 InvalidFileFault fault = new InvalidFileFault();
                 fault.problemType = "File already exists.";
                 throw new FaultException<InvalidFileFault>(fault, new FaultReason("File already exists."));
