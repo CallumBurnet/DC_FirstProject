@@ -37,6 +37,8 @@ namespace LobbyClient
             try
             {
                 await DownloadFile(fileName, progress, cts.Token);
+                downloadText.Text = "Done";
+                cancelOrDoneButton.Content = "Close";
             } catch (OperationCanceledException) {
                 MessageBox.Show("Download has been cancelled");
             }
