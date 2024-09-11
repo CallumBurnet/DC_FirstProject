@@ -70,7 +70,19 @@
                 <Border BorderBrush="Black" BorderThickness="1px 1px 1px 0px" Grid.Row="0">
                     <TextBlock Name="roomNameBox" FontWeight="Bold" Grid.Row="0" Margin="3px" Text="Welcome. Please select lobby to join."/>
                 </Border>
-                <ListView BorderThickness="1px" BorderBrush="Black" Grid.Row="1" Name="chatView" SelectionChanged="chatView_SelectionChanged"/>
+                <ListView BorderThickness="1px" BorderBrush="Black" Grid.Row="1" Name="chatView" SelectionChanged="chatView_SelectionChanged">
+                    <ListView.ItemContainerStyle>
+                        <Style TargetType="{x:Type ListBoxItem}" BasedOn="{StaticResource {x:Type ListBoxItem}}">
+                            <Setter Property="DockPanel.Dock"
+                        Value="Bottom" />
+                        </Style>
+                    </ListView.ItemContainerStyle>
+                    <ListBox.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <DockPanel LastChildFill="False" />
+                        </ItemsPanelTemplate>
+                    </ListBox.ItemsPanel>
+                </ListView>
 
                 <Border BorderBrush="Black" BorderThickness="1px 0px 1px 1px" Grid.Row="2">
                     <Grid Grid.Row="2" Name="PrivateMessagePopUp" Visibility="Collapsed" >

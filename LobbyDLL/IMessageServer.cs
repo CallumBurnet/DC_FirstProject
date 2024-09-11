@@ -21,7 +21,8 @@ namespace LobbyDLL
         List<string> FetchRoomUsers();
 
 
-        [OperationContract(IsOneWay = true)]
+        [OperationContract]
+        [FaultContract(typeof(UserNotFoundFault))]
 
         void SendPrivateMessage(string username, string from, string to);
         [OperationContract(IsOneWay = true)]

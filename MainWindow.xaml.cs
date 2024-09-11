@@ -111,12 +111,12 @@ namespace LobbyCLient
             catch (FaultException<UnauthorisedUserFault> ex)
             {
                 ErrorBox.Visibility = Visibility.Visible;
-                ErrorBox.Text = ex.Message + "Username not valid. Please try again.";
+                ErrorBox.Text = ex.Message + " Please try again.";
             }
             catch (Exception ee)  // TODO: Should not catch all, instead debug why it fails and add a dedicated catch if reasonable
             { 
                 ErrorBox.Visibility = Visibility.Visible;
-                ErrorBox.Text = "Please try again." + ee.Message;
+                ErrorBox.Text = " Please try again." + ee.Message;
             }
         }
 
@@ -196,6 +196,8 @@ namespace LobbyCLient
 
         private void sendMsg_Click(Object sender, RoutedEventArgs e)
         {
+            string tempUser = privateUserTo;
+            PrivateMessageToggle(false);
             try
             {
                 if (!privateUserTo.Equals(""))
@@ -203,15 +205,14 @@ namespace LobbyCLient
                     PrivateMessageToggle(true);
                 }
                 messageProxy.SendMessage(messageBox.Text, privateUserTo);
-                privateUserTo = "";
                 PrivateMessageToggle(false);
             }
             catch (FaultException<UserNotFoundFault>)
             {
-                PrivateMessagePopUpText.Text = privateUserTo + " has logged out. Message not sent.";
-                privateUserTo = "";
+                PrivateMessagePopUpText.Dispatcher.BeginInvoke(new Action(() => { PrivateMessagePopUpText.Text = tempUser + " is not in the room. Message not sent."; }));
             }
             catch (Exception) { }
+            privateUserTo = "";
         }
 
         private void UserView_MouseDoubleClick(object sender, MouseButtonEventArgs e)
