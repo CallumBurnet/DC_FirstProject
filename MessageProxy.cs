@@ -49,13 +49,13 @@ namespace LobbyClient
             if (!toUser.Equals(""))
             {
                 messages.Insert(0,username + ": @" + toUser + " " + message);
-                window.chatView.Dispatcher.Invoke(new Action(() => window.chatView.Items.Refresh()));
+                UpdateChatView();
                 server.SendPrivateMessage("@" + toUser + " " + message, this.username, toUser);
             }
             else
             {
                 messages.Insert(0, username + ": " + message);
-                window.chatView.Dispatcher.Invoke(new Action(() => window.chatView.Items.Refresh()));
+                UpdateChatView();
                 server.SendPublicMessage(message, this.username);
             }
         }
@@ -63,8 +63,13 @@ namespace LobbyClient
         public void PushMessage(string message)
         {
             messages.Insert(0, message);
-            window.chatView.Dispatcher.Invoke(new Action(() => window.chatView.Items.Refresh()));
+            UpdateChatView();
+        }
 
+        private void UpdateChatView()
+        {
+            window.chatView.Dispatcher.Invoke(new Action(() => window.chatView.Items.Refresh()));
+            window.chatView.Dispatcher.Invoke(new Action(() => window.chatView.ScrollIntoView(messages[0])));
         }
 
         public void Leave()
