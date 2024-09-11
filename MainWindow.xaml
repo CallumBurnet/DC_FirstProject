@@ -64,6 +64,7 @@
             <Grid.RowDefinitions>
                 <RowDefinition Height="auto"/>
                 <RowDefinition Height="*"/>
+                <RowDefinition Height="auto"/>
                 <RowDefinition Height="50px"/>
             </Grid.RowDefinitions>
                 <Border BorderBrush="Black" BorderThickness="1px 1px 1px 0px" Grid.Row="0">
@@ -72,7 +73,18 @@
                 <ListView BorderThickness="1px" BorderBrush="Black" Grid.Row="1" Name="chatView" SelectionChanged="chatView_SelectionChanged"/>
 
                 <Border BorderBrush="Black" BorderThickness="1px 0px 1px 1px" Grid.Row="2">
-                    <Grid Grid.Row="2" >
+                    <Grid Grid.Row="2" Name="PrivateMessagePopUp" Visibility="Collapsed" >
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="auto"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Name="PrivateMessagePopUpText" Text="Sending as private message to @" Margin="3px"  Grid.Column="0"/>
+                        <Button Name="CancelPrivateButton" Click="CancelPrivateButton_Click"  Grid.Column="1" Margin="3px" Padding="3px">X</Button>
+                    </Grid>
+                </Border>
+
+                <Border BorderBrush="Black" BorderThickness="1px 0px 1px 1px" Grid.Row="3">
+                    <Grid Grid.Row="3" >
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="3*"/>
                         <ColumnDefinition Width="1*"/>

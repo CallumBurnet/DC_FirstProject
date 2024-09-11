@@ -35,6 +35,7 @@ namespace LobbyClient
             this.roomName = roomName;
             server.Join(roomName, username);
             messages = new List<string>();
+            window.chatView.Dispatcher.Invoke(new Action(() => window.chatView.ItemsSource = messages));
 
             // Also periodically refresh room user list
             cancelTokenSource = new CancellationTokenSource();
@@ -42,15 +43,26 @@ namespace LobbyClient
             this.window = window;
             UpdateUserList();
         }
-        public void SendPublic(string message)
+        public void SendMessage(string message, string toUser)
         {
-            server.SendPublicMessage(message, this.username);
+            if (!toUser.Equals(""))
+            {
+                messages.Add(username + ": @" + toUser + " " + message);
+                window.chatView.Dispatcher.Invoke(new Action(() => window.chatView.Items.Refresh()));
+                server.SendPrivateMessage("@" + toUser + " " + message, this.username, toUser);
+            }
+            else
+            {
+                messages.Add(username + ": " + message);
+                window.chatView.Dispatcher.Invoke(new Action(() => window.chatView.Items.Refresh()));
+                server.SendPublicMessage(message, this.username);
+            }
         }
+
         public void PushMessage(string message)
         {
             messages.Add(message);
-            window.chatView.Dispatcher.Invoke(new Action(() => window.chatView.ItemsSource = null));
-            window.chatView.Dispatcher.Invoke(new Action(() => window.chatView.ItemsSource = messages));
+            window.chatView.Dispatcher.Invoke(new Action(() => window.chatView.Items.Refresh()));
 
         }
 

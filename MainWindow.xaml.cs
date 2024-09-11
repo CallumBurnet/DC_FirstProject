@@ -30,6 +30,7 @@ namespace LobbyCLient
         private ILobbyServer lobbyInterface;
         private MessageProxy messageProxy;
         private Boolean loggedIn;
+        private string privateUserTo;
 
         public MainWindow()
         {
@@ -54,8 +55,11 @@ namespace LobbyCLient
 
             //Create a listener for the double click on a room
             LobbyListView.MouseDoubleClick += LobbyListView_MouseDoubleClick;
+            activeUsersView.MouseDoubleClick += UserView_MouseDoubleClick;
 
             disableSendUI(true);
+
+            privateUserTo = "";
         }
 
         private async void UpdateLobbyData()  // Thread that periodically updates the full room list
@@ -194,9 +198,29 @@ namespace LobbyCLient
         {
             try
             {
-                messageProxy.SendPublic(messageBox.Text);
+                if (!privateUserTo.Equals(""))
+                {
+                    PrivateMessageToggle(true);
+                }
+                messageProxy.SendMessage(messageBox.Text, privateUserTo);
+                privateUserTo = "";
+                PrivateMessageToggle(false);
             }
             catch (Exception) { }
+        }
+
+        private void UserView_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+        {
+            if (!activeUsersView.SelectedItem.ToString().Equals(usernameBox.Text))
+            {
+                privateUserTo = activeUsersView.SelectedItem.ToString();
+                PrivateMessageToggle(true);
+            }
+            else
+            {
+                privateUserTo = "";
+                PrivateMessageToggle(false);
+            }
         }
 
         private void attachMsg_Click(Object sender, RoutedEventArgs e)
@@ -218,6 +242,8 @@ namespace LobbyCLient
 
         }
 
+
+
         private void disableSendUI(Boolean option)
         {
             if (option)
@@ -232,6 +258,25 @@ namespace LobbyCLient
         private void activeUsersView_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
 
+        }
+
+        private void CancelPrivateButton_Click(object sender, RoutedEventArgs e)
+        {
+            PrivateMessageToggle(false);
+            privateUserTo = "";
+        }
+
+        private void PrivateMessageToggle(Boolean option)
+        {
+            if (option)
+            {
+                PrivateMessagePopUp.Dispatcher.BeginInvoke(new Action(() => { PrivateMessagePopUp.Visibility = Visibility.Visible; }));
+                PrivateMessagePopUpText.Dispatcher.BeginInvoke(new Action(() => { PrivateMessagePopUpText.Text = "Sending private message to @" + privateUserTo; }));
+            }
+            else
+            {
+                Dispatcher.BeginInvoke(new Action(() => { PrivateMessagePopUp.Visibility = Visibility.Collapsed; }));
+            }
         }
     }
 

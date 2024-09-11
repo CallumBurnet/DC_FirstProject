@@ -15,11 +15,13 @@ namespace LobbyServer
     {
         private Room room;
         private string username;
+        private readonly IRoomServerCallback callback;
 
         public MessageServer()
         {
             room = null;
             username = "";
+            callback = OperationContext.Current.GetCallbackChannel<IRoomServerCallback>();
         }
 
         // Doesn't seem like it's possible to pass constructor params, so use a manual join and guards
@@ -77,7 +79,7 @@ namespace LobbyServer
 
         internal void RelayMessage(string message)
         {
-            OperationContext.Current.GetCallbackChannel<IRoomServerCallback>().PushMessage(message);
+            callback.PushMessage(message);
         }
     }
 }
