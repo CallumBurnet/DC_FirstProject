@@ -206,6 +206,11 @@ namespace LobbyCLient
                 privateUserTo = "";
                 PrivateMessageToggle(false);
             }
+            catch (FaultException<UserNotFoundFault>)
+            {
+                PrivateMessagePopUpText.Text = privateUserTo + " has logged out. Message not sent.";
+                privateUserTo = "";
+            }
             catch (Exception) { }
         }
 

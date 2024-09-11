@@ -3,6 +3,7 @@ using LobbyDLL;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Runtime.CompilerServices;
 using System.ServiceModel;
 using System.ServiceModel.Channels;
@@ -45,17 +46,25 @@ namespace LobbyClient
         }
         public void SendMessage(string message, string toUser)
         {
-            if (!toUser.Equals(""))
+            try
             {
-                messages.Add(username + ": @" + toUser + " " + message);
-                window.chatView.Dispatcher.Invoke(new Action(() => window.chatView.Items.Refresh()));
-                server.SendPrivateMessage("@" + toUser + " " + message, this.username, toUser);
+
+                if (!toUser.Equals(""))
+                {
+                    messages.Add(username + ": @" + toUser + " " + message);
+                    window.chatView.Dispatcher.Invoke(new Action(() => window.chatView.Items.Refresh()));
+                    server.SendPrivateMessage("@" + toUser + " " + message, this.username, toUser);
+                }
+                else
+                {
+                    messages.Add(username + ": " + message);
+                    window.chatView.Dispatcher.Invoke(new Action(() => window.chatView.Items.Refresh()));
+                    server.SendPublicMessage(message, this.username);
+                }
             }
-            else
+            catch (FaultException<UserNotFoundFault>)
             {
-                messages.Add(username + ": " + message);
-                window.chatView.Dispatcher.Invoke(new Action(() => window.chatView.Items.Refresh()));
-                server.SendPublicMessage(message, this.username);
+                throw;
             }
         }
 
