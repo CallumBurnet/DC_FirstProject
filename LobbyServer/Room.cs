@@ -146,13 +146,12 @@ namespace LobbyServer
             // Don't bother with appending a enumerator tag for dupes for now. Just throw
             try
             {
-
                 files.Add(file.name, file);
-                Console.WriteLine("ADDED");
+                Console.WriteLine("Added file.");
             }
             catch (ArgumentException)
             {
-                Console.WriteLine("Failed");
+                Console.WriteLine("Failed to add file.");
 
                 InvalidFileFault fault = new InvalidFileFault();
                 fault.problemType = "File already exists.";

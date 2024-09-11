@@ -43,9 +43,7 @@ namespace LobbyClient
         }
         private async Task DownloadFile(string fileName, IProgress<int> progress, CancellationToken token)
         {
-
             await proxy.DownloadFile(fileName, progress, token);
-
         }
        
         private void CancelDownload_Click(object sender, RoutedEventArgs e)
@@ -53,6 +51,5 @@ namespace LobbyClient
             cts.Cancel();
             this.Close();
         }
-
     }
 }

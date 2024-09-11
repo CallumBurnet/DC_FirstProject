@@ -17,10 +17,10 @@ namespace LobbyClient
     public class FileListProxy: IFileServerCallback
     {
         ChannelFactory<IFileServer> fileFactory;
-        private IFileServer server;
-        private string userName;
-        private string roomName;
-        private MainWindow window;
+        private readonly IFileServer server;
+        private readonly string userName;
+        private readonly string roomName;
+        private readonly MainWindow window;
         private DownloadWindow downloadWindow;
         public FileListProxy(string userName, string roomName, MainWindow window)
         {
@@ -41,15 +41,15 @@ namespace LobbyClient
         }
         public List<string> FetchNewFileList()
         {
-           
             return server.FetchFileNames();
-
         }
-        public RoomFile FetchFile(string fileName) { 
+        public RoomFile FetchFile(string fileName)
+        { 
 
             return server.FetchFile(fileName);
         }
-        public void AddFile(RoomFile file) {
+        public void AddFile(RoomFile file)
+        {
             try
             {
                 server.AddFile(file);
@@ -69,7 +69,7 @@ namespace LobbyClient
         }
         public void FileChanged()
         {
-            Console.WriteLine("A File has been changed");
+            Console.WriteLine("A file has been changed");
         }
         public async Task DownloadFile(string fileName, IProgress<int> progress, CancellationToken token)
         {
@@ -83,22 +83,18 @@ namespace LobbyClient
                 await Task.Run(() =>
                 {
                     RoomFile file = server.FetchFile(fileName);
-                    //
-
                     
                     //Save the file to the chosen path
                     if (file.file is TextFileItem textFile)
                     {
-                        
                         File.WriteAllText(savePath, textFile.TextContent);
 
-                        for(int i = 0;i <= 10; i++)
+                        for(int i = 0; i <= 10; i++)
                         {
                             token.ThrowIfCancellationRequested();
                             progress.Report(i*10);
                             Thread.Sleep(10);
                         }
-
                     }
                     else if (file.file is ImageFileItem imageFile)
                     {

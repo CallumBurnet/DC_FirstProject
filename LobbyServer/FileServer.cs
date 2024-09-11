@@ -11,13 +11,13 @@ namespace LobbyServer
     {
         private Room room;
         private string username;
-        private Dictionary<string, RoomFile> fileStorage;
+        private readonly IFileServerCallback callback;
 
         public FileServer()
         {
             room = null;
             username = "";
-            fileStorage = new Dictionary<string, RoomFile>();
+            callback = OperationContext.Current.GetCallbackChannel<IFileServerCallback>();
         }
 
         // Doesn't seem like it's possible to pass constructor params, so use a manual join and guards
@@ -37,50 +37,33 @@ namespace LobbyServer
 
         public void AddFile(RoomFile file)
         {
-            try
+            if (room == null || string.IsNullOrEmpty(username))
             {
-                if (room == null || string.IsNullOrEmpty(username))
-                {
-                    UnauthorisedUserFault fault = new UnauthorisedUserFault();
-                    fault.problemType = "User not in room.";
-                    throw new FaultException<UnauthorisedUserFault>(fault, new FaultReason("User not in room."));
-                }
-                else
-                {
-                    Console.WriteLine("AAAAA");
-                    room.AddFile(file);  // May InvalidFileFault
-                }
-                
+                UnauthorisedUserFault fault = new UnauthorisedUserFault();
+                fault.problemType = "User not in room.";
+                throw new FaultException<UnauthorisedUserFault>(fault, new FaultReason("User not in room."));
             }
-            catch (Exception ex)
+            else
             {
-                Console.WriteLine($"Failed to add file {ex.Message}");
-                throw;
+                room.AddFile(file);  // May InvalidFileFault
             }
         }
 
         internal void RelayFileChange()
         {
-            OperationContext.Current.GetCallbackChannel<IFileServerCallback>().FileChanged();
+            // Just ping the user that file list changed
+            callback.FileChanged();
         }
- 
-
-
-
 
         public List<string> FetchFileNames()
         {
-
             if (room == null || username == "")
             {
-                Console.WriteLine("Couldnt fetch file names");
                 UnauthorisedUserFault fault = new UnauthorisedUserFault();
                 fault.problemType = "User not in room.";
                 throw new FaultException<UnauthorisedUserFault>(fault, new FaultReason("User not in room."));
             }
             return room.FetchFilenames();
-            //return new List<string>();
-
         }
 
         public RoomFile FetchFile(string filename)
@@ -91,7 +74,6 @@ namespace LobbyServer
                 fault.problemType = "User not in room.";
                 throw new FaultException<UnauthorisedUserFault>(fault, new FaultReason("User not in room."));
             }
-
             return room.FetchFile(filename);  // May InvalidFileFault
         }
     }

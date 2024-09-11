@@ -15,18 +15,23 @@ namespace LobbyDLL
     {
         [OperationContract]
         [FaultContract(typeof(InvalidRoomFault))]
+        [FaultContract(typeof(UnauthorisedUserFault))]
+        [FaultContract(typeof(DuplicateConnectionFault))]
         void Join(string roomName, string userName);
         [OperationContract]
         void Leave();
 
         [OperationContract]
+        [FaultContract(typeof(UnauthorisedUserFault))]
         [FaultContract(typeof(InvalidFileFault))]
         void AddFile(RoomFile file);
 
-        [OperationContract] //Client Implementation of Callback ~ delegate example
+        [OperationContract]
+        [FaultContract(typeof(UnauthorisedUserFault))]
         [FaultContract(typeof(InvalidFileFault))]
         List<string> FetchFileNames();
         [OperationContract]
+        [FaultContract(typeof(UnauthorisedUserFault))]
         [FaultContract(typeof(InvalidFileFault))]
         RoomFile FetchFile(string fileName);
     }

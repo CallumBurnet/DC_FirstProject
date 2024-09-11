@@ -66,9 +66,6 @@ namespace LobbyCLient
             //Create a listener for the double click on a room
             LobbyListView.MouseDoubleClick += LobbyListView_MouseDoubleClick;
             filesView.MouseDoubleClick += filesView_MouseDoubleClick;
-            
-
-
         }
   
         private async void updateFileData()
@@ -183,11 +180,9 @@ namespace LobbyCLient
                await JoinMessageServerAsync(roomName, userName);
                await JoinFileServerAsync(roomName, userName);
                updateFileData();
-
-
             }
         }
-        private async void filesView_MouseDoubleClick(object sender, MouseEventArgs e)
+        private void filesView_MouseDoubleClick(object sender, MouseEventArgs e)
         {
             if (filesView.SelectedItem != null)
             {
@@ -195,7 +190,6 @@ namespace LobbyCLient
                 downloadWindow = fileListProxy.DownloadWindow;
                 downloadWindow.StartDownload(selectedFileName);
                 downloadWindow.Show();
-
             }
         }
         private async Task JoinMessageServerAsync(string roomName, string userName) //async join - prevent ui freeze if any
@@ -210,7 +204,6 @@ namespace LobbyCLient
         {
             await Task.Run(() => {
                 fileListProxy = new FileListProxy(userName, roomName, this);
-
             });
 
         }
@@ -260,26 +253,30 @@ namespace LobbyCLient
         }
 
 
-        private void attachMsg_Click(Object sender, RoutedEventArgs e)
+        private void sendFile_Click(Object sender, RoutedEventArgs e)
         {
-            try
+            if (fileListProxy == null)
             {
-                OpenFileDialog openFileDialog = new OpenFileDialog();
-                openFileDialog.InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyPictures);
-                openFileDialog.Filter = "All files (*.*)|*.*";
-                if(openFileDialog.ShowDialog()== true)
-                {
-                    string selectedFilePath = openFileDialog.FileName;
-
-                    RoomFile roomFile = createFileItem(selectedFilePath);
-                    
-                    fileListProxy.AddFile(roomFile);
-
-
-
-                }
+                MessageBox.Show("Please join a room before sending a file.");
             }
-            catch (Exception) { }
+            else
+            {
+                try
+                {
+                    OpenFileDialog openFileDialog = new OpenFileDialog();
+                    openFileDialog.InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyPictures);
+                    openFileDialog.Filter = "All files (*.*)|*.*";
+                    if (openFileDialog.ShowDialog() == true)
+                    {
+                        string selectedFilePath = openFileDialog.FileName;
+
+                        RoomFile roomFile = createFileItem(selectedFilePath);
+
+                        fileListProxy.AddFile(roomFile);
+                    }
+                }
+                catch (Exception) { }
+            }
         }
 
         private void lobbyNameGo_Click(object sender, RoutedEventArgs e)
@@ -288,7 +285,6 @@ namespace LobbyCLient
         }
         private RoomFile createFileItem(string filePath)
         {
-            
             string fileName = System.IO.Path.GetFileName(filePath);
             string extension = fileName.Length > 3 ? fileName.Substring(fileName.Length - 4).ToLower() : "";
 
@@ -303,8 +299,7 @@ namespace LobbyCLient
                         fileName = fileName,
                         Bitmap = bitmap
                     };
-                   return new RoomFile(fileName, extension, null, fileItem);
-
+                    return new RoomFile(fileName, extension, null, fileItem);
                 }
 
             }
@@ -316,17 +311,13 @@ namespace LobbyCLient
                     fileName = fileName,
                     TextContent = text
                 };
-                return new RoomFile(fileName, extension,null , fileItem);
+                return new RoomFile(fileName, extension, null, fileItem);
             }
             else
             {
                 MessageBox.Show("Unsupported file Type");
                 return null;
             }
-
-
         }
-
     }
-
 }
