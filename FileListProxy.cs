@@ -89,12 +89,26 @@ namespace LobbyClient
                     //Save the file to the chosen path
                     if (file.file is TextFileItem textFile)
                     {
+                        
                         File.WriteAllText(savePath, textFile.TextContent);
+
+                        for(int i = 0;i <= 10; i++)
+                        {
+                            token.ThrowIfCancellationRequested();
+                            progress.Report(i*10);
+                            Thread.Sleep(10);
+                        }
 
                     }
                     else if (file.file is ImageFileItem imageFile)
                     {
                         imageFile.Bitmap.Save(savePath);
+                        for (int i = 0; i <= 10; i++)
+                        {
+                            token.ThrowIfCancellationRequested();
+                            progress.Report(i * 10);
+                            Thread.Sleep(10);
+                        }
                     }
                 }, token);
             }
