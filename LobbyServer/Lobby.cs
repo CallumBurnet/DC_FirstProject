@@ -5,6 +5,7 @@ using System.Linq;
 using System.Reflection;
 using System.ServiceModel;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 
@@ -43,6 +44,11 @@ namespace LobbyServer
                 throw new FaultException<UnauthorisedUserFault>(fault, new FaultReason("Username cannot be blank."));
             }
 
+            if (!Regex.IsMatch(username, @"^[a-zA-Z0-9]+$"))
+            {
+                fault.problemType = "Username can only contain letters and numbers.";
+                throw new FaultException<UnauthorisedUserFault>(fault, new FaultReason("Username can only contain letters and numbers."));
+            }
 
             try
             {
@@ -67,18 +73,24 @@ namespace LobbyServer
 
         public void MakeRoom(string roomName, string owner)
         {
+            InvalidRoomFault fault = new InvalidRoomFault();
             try
             {
+                if (!Regex.IsMatch(roomName, @"^[a-zA-Z0-9]+$"))
+                {
+                    throw new FaultException<InvalidRoomFault>(fault, new FaultReason("Room can only contain letters and numbers."));
+                }
+
                 Room room = new Room(this, roomName, owner);
                 rooms.Add(roomName, room);
             }
             catch (ArgumentException e)
             {
                 // Room already exists
-                InvalidRoomFault fault = new InvalidRoomFault();
                 fault.problemType = "Room already exists.";
                 throw new FaultException<InvalidRoomFault>(fault, new FaultReason("Room already exists."));
             }
+
         }
 
         public void FetchRoomData(out List<string> roomNames, out List<uint> userCounts)
