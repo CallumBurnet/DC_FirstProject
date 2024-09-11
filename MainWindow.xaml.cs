@@ -35,7 +35,6 @@ namespace LobbyCLient
         private ILobbyServer lobbyInterface;
         private MessageProxy messageProxy;
         private FileListProxy fileListProxy;
-        private RoomFile roomFile;
         DownloadWindow downloadWindow;
 
 
@@ -249,14 +248,8 @@ namespace LobbyCLient
         {
             try
             {
-                if (roomFile != null && !string.IsNullOrEmpty(roomFile.name))
-                {
-                    fileListProxy.AddFile(roomFile);
-                }
-                else
-                {
-                    Console.WriteLine("Could not retrieve valid RoomFile or file name.");
-                }
+                
+              
             }
             catch (Exception ex)
             {
@@ -277,9 +270,11 @@ namespace LobbyCLient
                 if(openFileDialog.ShowDialog()== true)
                 {
                     string selectedFilePath = openFileDialog.FileName;
+
+                    RoomFile roomFile = createFileItem(selectedFilePath);
                     
-                    roomFile = createFileItem(selectedFilePath);
-            
+                    fileListProxy.AddFile(roomFile);
+
 
 
                 }

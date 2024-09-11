@@ -26,6 +26,8 @@ namespace LobbyClient
         {
             string fileURL = "net.tcp://localhost:8100/file";
             NetTcpBinding binding = new NetTcpBinding();
+            binding.MaxBufferSize = 5000000;
+            binding.MaxReceivedMessageSize = 5000000;
             fileFactory = new DuplexChannelFactory<IFileServer>(this, binding, new EndpointAddress(fileURL)); //message factory
             server = fileFactory.CreateChannel();
             this.userName = userName;
