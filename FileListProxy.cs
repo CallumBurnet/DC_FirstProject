@@ -10,6 +10,8 @@ using System.Diagnostics;
 using LobbyCLient;
 using System.Windows;
 using System.Threading;
+using Microsoft.Win32;
+using System.Drawing;
 
 
 namespace LobbyClient
@@ -28,24 +30,31 @@ namespace LobbyClient
             NetTcpBinding binding = new NetTcpBinding();
             binding.MaxBufferSize = 5000000;
             binding.MaxReceivedMessageSize = 5000000;
-            fileFactory = new DuplexChannelFactory<IFileServer>(this, binding, new EndpointAddress(fileURL)); //message factory
+            fileFactory = new DuplexChannelFactory<IFileServer>(this, binding, new EndpointAddress(fileURL)); // file factory
             server = fileFactory.CreateChannel();
+
             this.userName = userName;
             this.roomName = roomName;
+            this.window = window;
             Application.Current.Dispatcher.Invoke(() =>
             {
                 downloadWindow = new DownloadWindow(this);
             });
             server.Join(roomName, userName);
-          
+
+            // Immediately fetch files
+            window.filesView.Dispatcher.Invoke(new Action(() => window.filesView.ItemsSource = new List<string>()));
+            FetchNewFileList();
         }
-        public List<string> FetchNewFileList()
+        public async void FetchNewFileList()
         {
-            return server.FetchFileNames();
+            await Task.Run(() =>
+            {
+                window.filesView.Dispatcher.Invoke(new Action(() => window.filesView.ItemsSource = server.FetchFileNames()));
+            });
         }
         public RoomFile FetchFile(string fileName)
-        { 
-
+        {
             return server.FetchFile(fileName);
         }
         public void AddFile(RoomFile file)
@@ -69,7 +78,7 @@ namespace LobbyClient
         }
         public void FileChanged()
         {
-            Console.WriteLine("A file has been changed");
+            FetchNewFileList();
         }
         public async Task DownloadFile(string fileName, IProgress<int> progress, CancellationToken token)
         {
@@ -107,6 +116,69 @@ namespace LobbyClient
                         }
                     }
                 }, token);
+            }
+        }
+
+        public async void UploadFile()
+        {
+            await Task.Run(() =>
+            {
+                OpenFileDialog openFileDialog = new OpenFileDialog();
+                openFileDialog.InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyPictures);
+                openFileDialog.Filter = "All files (*.*)|*.*";
+                if (openFileDialog.ShowDialog() == true)
+                {
+                    string selectedFilePath = openFileDialog.FileName;
+                    RoomFile roomFile = CreateFileItem(selectedFilePath);
+
+                    if (roomFile != null)
+                    {
+                        AddFile(roomFile);
+                    }
+                }
+            });
+        }
+
+        private RoomFile CreateFileItem(string filePath)
+        {
+            string fileName = Path.GetFileName(filePath);
+            string extension = fileName.Length > 3 ? fileName.Substring(fileName.Length - 4).ToLower() : "";
+
+            if (new FileInfo(filePath).Length <= 3000000)
+            {
+                if (extension == ".png" || extension == ".bmp")
+                {
+                    using (FileStream stream = new FileStream(filePath, FileMode.Open, FileAccess.Read))
+                    {
+                        Bitmap bitmap = new Bitmap(stream);
+                        ImageFileItem fileItem = new ImageFileItem
+                        {
+                            fileName = fileName,
+                            Bitmap = bitmap
+                        };
+                        return new RoomFile(fileName, extension, null, fileItem);
+                    }
+                }
+                else if (extension == ".txt")
+                {
+                    string text = File.ReadAllText(filePath);
+                    TextFileItem fileItem = new TextFileItem
+                    {
+                        fileName = fileName,
+                        TextContent = text
+                    };
+                    return new RoomFile(fileName, extension, null, fileItem);
+                }
+                else
+                {
+                    MessageBox.Show("Unsupported file type.");
+                    return null;
+                }
+            }
+            else
+            {
+                MessageBox.Show("File upload cannot exceed 3MB.");
+                return null;
             }
         }
 

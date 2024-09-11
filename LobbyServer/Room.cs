@@ -148,6 +148,7 @@ namespace LobbyServer
             {
                 files.Add(file.name, file);
                 Console.WriteLine("Added file.");
+                RelayFileChange();
             }
             catch (ArgumentException)
             {

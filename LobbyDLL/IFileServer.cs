@@ -39,7 +39,5 @@ namespace LobbyDLL
     {
         [OperationContract(IsOneWay = true)]
         void FileChanged();
-       
-
     }
 }

@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.ServiceModel;
 using LobbyDLL;
+using System.ServiceModel.Channels;
 
 namespace LobbyServer
 {
@@ -18,6 +19,8 @@ namespace LobbyServer
             ServiceHost messageHost;
             ServiceHost fileHost;
             NetTcpBinding tcp = new NetTcpBinding();
+            tcp.MaxBufferSize = 5000000;
+            tcp.MaxReceivedMessageSize = 5000000;
 
             host = new ServiceHost(typeof(LobbyServer));
             messageHost = new ServiceHost(typeof(MessageServer));
