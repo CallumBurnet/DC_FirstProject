@@ -33,7 +33,6 @@ namespace LobbyServer
         public void Leave()
         {
             room.Leave(username);
-            // Extra disconnect logic should go here, though I think they would already be deauthorised...
         }
 
         public void AddFile(RoomFile file)
@@ -48,6 +47,7 @@ namespace LobbyServer
                 }
                 else
                 {
+                    Console.WriteLine("AAAAA");
                     room.AddFile(file);  // May InvalidFileFault
                 }
                 
@@ -63,11 +63,7 @@ namespace LobbyServer
         {
             OperationContext.Current.GetCallbackChannel<IFileServerCallback>().FileChanged();
         }
-        internal void RelayFileDownload()
-        {
-            OperationContext.Current.GetCallbackChannel<IFileServerCallback>().DownloadProgress();
-
-        }
+ 
 
 
 

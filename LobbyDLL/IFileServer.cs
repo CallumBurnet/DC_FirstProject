@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.ServiceModel;
 using System.IO;
 using LobbyDLL;
+using System.Threading;
 
 namespace LobbyDLL
 {
@@ -33,8 +34,7 @@ namespace LobbyDLL
     {
         [OperationContract(IsOneWay = true)]
         void FileChanged();
-        [OperationContract(IsOneWay = true)]
-        void DownloadProgress(string fileName, int percentage);
+       
 
     }
 }

@@ -9,7 +9,7 @@ using System.IO;
 using System.Diagnostics;
 using LobbyCLient;
 using System.Windows;
-
+using System.Threading;
 
 
 namespace LobbyClient
@@ -69,7 +69,7 @@ namespace LobbyClient
         {
             Console.WriteLine("A File has been changed");
         }
-        public async Task DownloadFile(string fileName, IProgress<int> progress)
+        public async Task DownloadFile(string fileName, IProgress<int> progress, CancellationToken token)
         {
             Microsoft.Win32.SaveFileDialog saveFileDialog = new Microsoft.Win32.SaveFileDialog();
             saveFileDialog.FileName = fileName;
@@ -80,9 +80,10 @@ namespace LobbyClient
                 string savePath = saveFileDialog.FileName;
                 await Task.Run(() =>
                 {
-                    RoomFile file = server.FetchFile(fileName); 
-                    
+                    RoomFile file = server.FetchFile(fileName);
+                    //
 
+                    
                     //Save the file to the chosen path
                     if (file.file is TextFileItem textFile)
                     {
@@ -93,13 +94,10 @@ namespace LobbyClient
                     {
                         imageFile.Bitmap.Save(savePath);
                     }
-                });
+                }, token);
             }
         }
-        public void DownloadProgress(string fileName, int progress)
-        {
-            downloadWindow.DownloadProgress(fileName, progress);
-        }
+
         public DownloadWindow DownloadWindow { get { return downloadWindow; } }
 
     }

@@ -20,12 +20,12 @@ namespace LobbyClient
     /// </summary>
     public partial class DownloadWindow : Window
     {
-        private CancellationToken cts;
+        private CancellationTokenSource cts;
         private FileListProxy proxy;
         public DownloadWindow(FileListProxy fileListProxy)
         {
             InitializeComponent();
-            cts = new CancellationToken();
+            cts = new CancellationTokenSource();
             proxy = fileListProxy;
         }
         public async void StartDownload(string fileName)
@@ -36,26 +36,21 @@ namespace LobbyClient
             });
             try
             {
-                await DownloadFile(fileName, progress, cts);
+                await DownloadFile(fileName, progress, cts.Token);
             } catch (OperationCanceledException) {
-
+                MessageBox.Show("Download has been cancelled");
             }
         }
         private async Task DownloadFile(string fileName, IProgress<int> progress, CancellationToken token)
         {
-            await proxy.DownloadFile(fileName, progress);
-        }
-        public void DownloadProgress(string fileName, int progress)
-        {
-            DownloadProgressBar.Dispatcher.Invoke(new Action(() => { DownloadProgressBar.Value = progress; }));
-            if (progress == 100)
-            {
 
-            }
+            await proxy.DownloadFile(fileName, progress, token);
+
         }
+       
         private void CancelDownload_Click(object sender, RoutedEventArgs e)
         {
-            return;
+            cts.Cancel();
         }
 
     }
