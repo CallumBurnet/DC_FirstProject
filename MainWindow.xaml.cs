@@ -36,7 +36,9 @@ namespace LobbyCLient
         private MessageProxy messageProxy;
         private FileListProxy fileListProxy;
         private RoomFile roomFile;
-       
+        DownloadWindow downloadWindow;
+
+
 
 
         public MainWindow()
@@ -64,6 +66,7 @@ namespace LobbyCLient
 
             //Create a listener for the double click on a room
             LobbyListView.MouseDoubleClick += LobbyListView_MouseDoubleClick;
+            filesView.MouseDoubleClick += filesView_MouseDoubleClick;
             
 
 
@@ -185,6 +188,17 @@ namespace LobbyCLient
 
             }
         }
+        private async void filesView_MouseDoubleClick(object sender, MouseEventArgs e)
+        {
+            if (filesView.SelectedItem != null)
+            {
+                string selectedFileName = filesView.SelectedItem.ToString();
+                downloadWindow = fileListProxy.DownloadWindow;
+                downloadWindow.StartDownload(selectedFileName);
+                downloadWindow.Show();
+
+            }
+        }
         private async Task JoinMessageServerAsync(string roomName, string userName) //async join - prevent ui freeze if any
         {
             await Task.Run(() => { 
@@ -265,9 +279,7 @@ namespace LobbyCLient
                     string selectedFilePath = openFileDialog.FileName;
                     
                     roomFile = createFileItem(selectedFilePath);
-                   
-                    Console.WriteLine(roomFile.name + "--  ex " + roomFile.extension + " -- file" + roomFile.file);
-
+            
 
 
                 }

@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using System.IO;
 using System.Diagnostics;
 using LobbyCLient;
+using System.Windows;
 
 
 
@@ -20,6 +21,7 @@ namespace LobbyClient
         private string userName;
         private string roomName;
         private MainWindow window;
+        private DownloadWindow downloadWindow;
         public FileListProxy(string userName, string roomName, MainWindow window)
         {
             string fileURL = "net.tcp://localhost:8100/file";
@@ -28,7 +30,12 @@ namespace LobbyClient
             server = fileFactory.CreateChannel();
             this.userName = userName;
             this.roomName = roomName;
+            Application.Current.Dispatcher.Invoke(() =>
+            {
+                downloadWindow = new DownloadWindow(this);
+            });
             server.Join(roomName, userName);
+          
         }
         public List<string> FetchNewFileList()
         {
@@ -62,5 +69,38 @@ namespace LobbyClient
         {
             Console.WriteLine("A File has been changed");
         }
+        public async Task DownloadFile(string fileName, IProgress<int> progress)
+        {
+            Microsoft.Win32.SaveFileDialog saveFileDialog = new Microsoft.Win32.SaveFileDialog();
+            saveFileDialog.FileName = fileName;
+            saveFileDialog.Filter = "All files|*.*";
+            bool? result = saveFileDialog.ShowDialog();
+            if (result == true)
+            {
+                string savePath = saveFileDialog.FileName;
+                await Task.Run(() =>
+                {
+                    RoomFile file = server.FetchFile(fileName); 
+                    
+
+                    //Save the file to the chosen path
+                    if (file.file is TextFileItem textFile)
+                    {
+                        File.WriteAllText(savePath, textFile.TextContent);
+
+                    }
+                    else if (file.file is ImageFileItem imageFile)
+                    {
+                        imageFile.Bitmap.Save(savePath);
+                    }
+                });
+            }
+        }
+        public void DownloadProgress(string fileName, int progress)
+        {
+            downloadWindow.DownloadProgress(fileName, progress);
+        }
+        public DownloadWindow DownloadWindow { get { return downloadWindow; } }
+
     }
 }

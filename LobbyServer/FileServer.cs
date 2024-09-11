@@ -63,6 +63,14 @@ namespace LobbyServer
         {
             OperationContext.Current.GetCallbackChannel<IFileServerCallback>().FileChanged();
         }
+        internal void RelayFileDownload()
+        {
+            OperationContext.Current.GetCallbackChannel<IFileServerCallback>().DownloadProgress();
+
+        }
+
+
+
 
         public List<string> FetchFileNames()
         {

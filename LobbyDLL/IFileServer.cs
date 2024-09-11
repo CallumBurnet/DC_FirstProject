@@ -33,7 +33,8 @@ namespace LobbyDLL
     {
         [OperationContract(IsOneWay = true)]
         void FileChanged();
-
+        [OperationContract(IsOneWay = true)]
+        void DownloadProgress(string fileName, int percentage);
 
     }
 }
