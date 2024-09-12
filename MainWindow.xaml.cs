@@ -284,6 +284,21 @@ namespace LobbyCLient
                 Dispatcher.BeginInvoke(new Action(() => { PrivateMessagePopUp.Visibility = Visibility.Collapsed; }));
             }
         }
+
+        private void messageBox_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+        {
+            messageBox.Text = "";
+        }
+
+        private void lobbyNameBox_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+        {
+            lobbyNameBox.Text = "";
+        }
+
+        private void usernameBox_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+        {
+            usernameBox.Text = "";
+        }
     }
 
 }

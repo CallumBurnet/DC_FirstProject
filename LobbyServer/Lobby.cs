@@ -76,11 +76,6 @@ namespace LobbyServer
             InvalidRoomFault fault = new InvalidRoomFault();
             try
             {
-                if (!Regex.IsMatch(roomName, @"^[a-zA-Z0-9]+$"))
-                {
-                    throw new FaultException<InvalidRoomFault>(fault, new FaultReason("Room can only contain letters and numbers."));
-                }
-
                 Room room = new Room(this, roomName, owner);
                 rooms.Add(roomName, room);
             }

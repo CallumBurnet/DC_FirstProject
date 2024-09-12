@@ -44,26 +44,32 @@ namespace LobbyClient
             this.window = window;
             UpdateUserList();
         }
-        public void SendMessage(string message, string toUser)
+        public async void SendMessage(string message, string toUser)
         {
-            if (!toUser.Equals(""))
+            await Task.Run(() =>
             {
-                messages.Insert(0,username + ": @" + toUser + " " + message);
-                UpdateChatView();
-                server.SendPrivateMessage("@" + toUser + " " + message, this.username, toUser);
-            }
-            else
-            {
-                messages.Insert(0, username + ": " + message);
-                UpdateChatView();
-                server.SendPublicMessage(message, this.username);
-            }
+                if (!toUser.Equals(""))
+                {
+                    messages.Insert(0, username + ": @" + toUser + " " + message);
+                    UpdateChatView();
+                    server.SendPrivateMessage("@" + toUser + " " + message, this.username, toUser);
+                }
+                else
+                {
+                    messages.Insert(0, username + ": " + message);
+                    UpdateChatView();
+                    server.SendPublicMessage(message, this.username);
+                }
+            });
         }
 
-        public void PushMessage(string message)
+        public async void PushMessage(string message)
         {
-            messages.Insert(0, message);
-            UpdateChatView();
+            await Task.Run(() =>
+            {
+                messages.Insert(0, message);
+                UpdateChatView();
+            });
         }
 
         private void UpdateChatView()
