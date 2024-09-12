@@ -20,11 +20,12 @@ namespace LobbyClient
     {
         ChannelFactory<IFileServer> fileFactory;
         private readonly IFileServer server;
-        private readonly string userName;
+        private readonly string username;
         private readonly string roomName;
         private readonly MainWindow window;
-        private DownloadWindow downloadWindow;
-        public FileListProxy(string userName, string roomName, MainWindow window)
+        private DownloadWindow downloadWindow;  // A visual download indicator
+
+        public FileListProxy(string username, string roomName, MainWindow window)
         {
             string fileURL = "net.tcp://localhost:8100/file";
             NetTcpBinding binding = new NetTcpBinding();
@@ -33,19 +34,26 @@ namespace LobbyClient
             fileFactory = new DuplexChannelFactory<IFileServer>(this, binding, new EndpointAddress(fileURL)); // file factory
             server = fileFactory.CreateChannel();
 
-            this.userName = userName;
+            this.username = username;
             this.roomName = roomName;
             this.window = window;
             Application.Current.Dispatcher.Invoke(() =>
             {
                 downloadWindow = new DownloadWindow(this);
             });
-            server.Join(roomName, userName);
+            server.Join(roomName, username);
 
             // Immediately fetch files
             window.filesView.Dispatcher.Invoke(new Action(() => window.filesView.ItemsSource = new List<string>()));
             FetchNewFileList();
         }
+        public void Leave()
+        {
+            // Unsubscribe and clean up display
+            server.Leave();
+            window.chatView.Dispatcher.Invoke(new Action(() => window.filesView.ItemsSource = null));
+        }
+
         public async void FetchNewFileList()
         {
             await Task.Run(() =>

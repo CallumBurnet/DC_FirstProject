@@ -21,11 +21,13 @@ namespace LobbyServer
 
     internal class Room  // Won't move to DLL until we need it to be public
     {
-        private Lobby lobby;
+        private readonly Lobby lobby;
         private readonly string name;
         private readonly string owner;
-        private Dictionary<string, ServerStruct> userConnections;
-        private Dictionary<string, RoomFile> files;
+        private readonly Dictionary<string, ServerStruct> userConnections = new Dictionary<string, ServerStruct>();
+        private readonly Dictionary<string, RoomFile> files = new Dictionary<string, RoomFile>();
+        private readonly Object userConnectionsLock = new Object();
+        private readonly Object filesLock = new Object();
         // TODO: Either mutex all dictionary operations, or use concurrent dictionary
 
         public Room(Lobby lobby, string name, string owner)
@@ -33,13 +35,14 @@ namespace LobbyServer
             this.lobby = lobby;
             this.name = name;
             this.owner = owner;
-            userConnections = new Dictionary<string, ServerStruct>();
-            files = new Dictionary<string, RoomFile>();
         }
 
         public List<string> Users()
         {
-            return userConnections.Keys.ToList();
+            lock (userConnectionsLock)
+            {
+                return userConnections.Keys.ToList();
+            }
         }
 
         public void Join(string username, MessageServer messageServer)
@@ -53,23 +56,26 @@ namespace LobbyServer
             }
 
             // Attempt MessageServer join
-            if (userConnections.ContainsKey(username))
+            lock (userConnectionsLock)
             {
-                if (userConnections[username].MessageServer == null)
+                if (userConnections.ContainsKey(username))
                 {
-                    DuplicateConnectionFault fault = new DuplicateConnectionFault();
-                    fault.problemType = "User already connected to the message server.";
-                    throw new FaultException<DuplicateConnectionFault>(fault, new FaultReason("User already connected to the message server."));
+                    if (userConnections[username].MessageServer == null)
+                    {
+                        DuplicateConnectionFault fault = new DuplicateConnectionFault();
+                        fault.problemType = "User already connected to the message server.";
+                        throw new FaultException<DuplicateConnectionFault>(fault, new FaultReason("User already connected to the message server."));
+                    }
+                    else
+                    {
+                        // User exists, but not subscribed for messages yet
+                        userConnections[username].MessageServer = messageServer;
+                    }
                 }
                 else
                 {
-                    // User exists, but not subscribed for messages yet
-                    userConnections[username].MessageServer = messageServer;
+                    userConnections.Add(username, new ServerStruct() { MessageServer = messageServer });
                 }
-            }
-            else
-            {
-                userConnections.Add(username, new ServerStruct() { MessageServer = messageServer });
             }
         }
 
@@ -84,36 +90,42 @@ namespace LobbyServer
             }
 
             // Attempt MessageServer join
-            if (userConnections.ContainsKey(username))
+            lock (userConnectionsLock)
             {
-                if (userConnections[username].MessageServer == null)
+                if (userConnections.ContainsKey(username))
                 {
-                    DuplicateConnectionFault fault = new DuplicateConnectionFault();
-                    fault.problemType = "User already connected to the file server.";
-                    throw new FaultException<DuplicateConnectionFault>(fault, new FaultReason("User already connected to the file server."));
+                    if (userConnections[username].MessageServer == null)
+                    {
+                        DuplicateConnectionFault fault = new DuplicateConnectionFault();
+                        fault.problemType = "User already connected to the file server.";
+                        throw new FaultException<DuplicateConnectionFault>(fault, new FaultReason("User already connected to the file server."));
+                    }
+                    else
+                    {
+                        // User exists, but not subscribed for messages yet
+                        userConnections[username].FileServer = fileServer;
+                    }
                 }
                 else
                 {
-                    // User exists, but not subscribed for messages yet
-                    userConnections[username].FileServer = fileServer;
+                    userConnections.Add(username, new ServerStruct() { FileServer = fileServer });
                 }
-            }
-            else
-            {
-                userConnections.Add(username, new ServerStruct() { FileServer = fileServer });
             }
         }
 
         public void Leave(string username)
         {
             // Won't do any extra validation. Just remove them
-            userConnections.Remove(username);
+            lock (userConnectionsLock)
+            {
+                userConnections.Remove(username);
+            }
         }
 
         public void SendPrivateMessage(string message, string from, string to)
         {
             // Ensure the target is in the room
-            if (!Users().Contains(from))
+            if (!userConnections.ContainsKey(to))
             {
                 UserNotFoundFault fault = new UserNotFoundFault();
                 fault.problemType = "Target user not in lobby.";
@@ -122,13 +134,22 @@ namespace LobbyServer
 
             // Send the edited message to the known client
             // TODO: Need to decide if we add timestamp here or purely client-side?
-            RelayMessage($"{from}: {message}", new List<MessageServer>() { userConnections[to].MessageServer });
+            List<MessageServer> filteredTargets;
+            lock (userConnectionsLock)
+            {
+                filteredTargets = new List<MessageServer>() { userConnections[to].MessageServer };
+            }
+            RelayMessage($"{from}: {message}", filteredTargets);
         }
 
         public void SendPublicMessage(string message, string from)
         {
             // Send the edited message to all but the origin
-            List<MessageServer> filteredTargets = userConnections.Where(i => !i.Key.Equals(from)).Select(d => d.Value.MessageServer).ToList();
+            List<MessageServer> filteredTargets;
+            lock (userConnectionsLock)
+            {
+                filteredTargets = userConnections.Where(i => !i.Key.Equals(from)).Select(d => d.Value.MessageServer).ToList();
+            }
             RelayMessage($"{from}: {message}", filteredTargets);
         }
 
@@ -163,22 +184,31 @@ namespace LobbyServer
         private void RelayFileChange()
         {
             // Broadcast to let clients know when to call FetchFilenames()
-            foreach (FileServer target in userConnections.Select(d => d.Value.FileServer))
+            lock (userConnectionsLock)  // The loop shouldn't block for too long, so it's fine
             {
-                target.RelayFileChange();
+                foreach (FileServer target in userConnections.Select(d => d.Value.FileServer))
+                {
+                    target.RelayFileChange();
+                }
             }
         }
 
         public List<string> FetchFilenames()
         {
-            return files.Keys.ToList();
+            lock (filesLock)
+            {
+                return files.Keys.ToList();
+            }
         }
 
         public RoomFile FetchFile(string filename)
         {
             try
             {
-                return files[filename];
+                lock (filesLock)
+                {
+                    return files[filename];
+                }
             }
             catch (KeyNotFoundException)
             {

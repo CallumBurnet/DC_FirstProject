@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -12,14 +12,10 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
-using LobbyDLL;
 using System.ServiceModel;
-using System.Linq.Expressions;
-using LobbyClient;
-using Microsoft.Win32;
-using System.IO;
-using System.Drawing;
 
+using LobbyDLL;
+using LobbyClient;
 
 
 namespace LobbyCLient
@@ -30,11 +26,12 @@ namespace LobbyCLient
     public partial class MainWindow : Window
     {
         //Declare interface variables for file, lobby and room servers.
-        private IFileServer fileInterface;
         private ILobbyServer lobbyInterface;
         private MessageProxy messageProxy;
         private FileListProxy fileListProxy;
         DownloadWindow downloadWindow;
+        private Boolean loggedIn;
+        private string privateUserTo;
 
         public MainWindow()
         {
@@ -50,8 +47,6 @@ namespace LobbyCLient
             //Initialise the file, lobby and room factories.
             lobbyFactory = new ChannelFactory<ILobbyServer>(tcp, URL);
 
-           
-
             //Create the factory channels.
             lobbyInterface = lobbyFactory.CreateChannel();
 
@@ -59,35 +54,37 @@ namespace LobbyCLient
             mainScreen.Visibility = Visibility.Collapsed;
             loginScreen.Visibility = Visibility.Visible;
 
-            //Create a listener for the double click on a room
+            //Create a listener for the double click on a room or room items
             LobbyListView.MouseDoubleClick += LobbyListView_MouseDoubleClick;
+            activeUsersView.MouseDoubleClick += UserView_MouseDoubleClick;
             filesView.MouseDoubleClick += filesView_MouseDoubleClick;
+
+            // Reset message text box status
+            disableSendUI(true);
+            privateUserTo = "";
         }
 
-        private async void UpdateLobbyData() //async implementation of updating the lobby data
+        private async void UpdateLobbyData()  // Thread that periodically updates the full room list
         {
+            loggedIn = true;
             await Task.Run(async () =>
             {
-                while (true)
+                while (loggedIn)
                 {
                     await FetchandUpdateLobbyData();
                     await Task.Delay(TimeSpan.FromSeconds(1)); //every 1 seconds
                 }
             });
         }
+
         private async Task FetchandUpdateLobbyData()
         {
             try
             {
                 List<string> roomNames = null;
                 List<uint> userCounts = null;
-                List<string> users = null;
-                await Task.Run(() => lobbyInterface.FetchRoomData(out roomNames, out userCounts, out users)); //fetches the lobby data as a task
-                Dispatcher.Invoke(() =>
-                {
-                    LobbyListView.ItemsSource = roomNames; //sets the listview content
-                    activeUsersView.ItemsSource = users; //sets the user listview content
-                });
+                await Task.Run(() => lobbyInterface.FetchRoomData(out roomNames, out userCounts)); //fetches the lobby data as a task
+                Dispatcher.Invoke(() => LobbyListView.ItemsSource = roomNames);
             }
             catch (Exception ex) {
                 Dispatcher.Invoke(() =>
@@ -108,9 +105,6 @@ namespace LobbyCLient
                 lobbyInterface.JoinLobby(usernameBox.Text);
                 UpdateLobbyData();
 
-                //Create the message server factory 
-                
-
                 //collapse login screen and make main window visible
                 loginScreen.Visibility = Visibility.Collapsed;
                 mainScreen.Visibility = Visibility.Visible;
@@ -118,44 +112,59 @@ namespace LobbyCLient
             }
             catch (FaultException<UnauthorisedUserFault> ex)
             {
-                ErrorBox.Text = ex.Message + "Please try again.";
+                ErrorBox.Visibility = Visibility.Visible;
+                ErrorBox.Text = ex.Message + " Please try again.";
             }
             catch (Exception ex) 
             { 
-                ErrorBox.Text = "Please try again.";
+                ErrorBox.Visibility = Visibility.Visible;
+                ErrorBox.Text = " Please try again." + ex.Message;
             }
         }
 
         private void logoutButton_Click(Object sender, RoutedEventArgs e)
         {
-            //leave lobby
+            // Leave existing room
+            messageProxy?.Leave();
+            messageProxy = null;
+            fileListProxy?.Leave();
+            fileListProxy = null;
+
+            // Leave lobby
+            loggedIn = false;
+            disableSendUI(true);
             lobbyInterface.LeaveLobby();
-            //collapse main window and make login screen visible
+            LobbyListView.SelectedItem = null;
+
+            // Collapse main window and make login screen visible
             mainScreen.Visibility = Visibility.Collapsed;
             loginScreen.Visibility = Visibility.Visible;
-
-
-
         }
+
         // Listview click
         private async void LobbyListView_MouseDoubleClick(object sender, MouseEventArgs e) //Implementation of the double click listview listener
         {
 
             if(LobbyListView.SelectedItem != null)
             {
-                //Room selection
-                string userName = lobbyInterface.Username; //Lobby interface method to return username
+                // Room selection
+                string userName = lobbyInterface.Username; // Lobby interface method to return username
                 string roomName = LobbyListView.SelectedItem.ToString();
+                roomNameBox.Text = roomName;  // Update room name label
 
                 // Join one at a time to avoid race conditions (should be fixed anyways once server locks are added)
                 await Task.Run(() => {
-                    messageProxy = new MessageProxy(userName, roomName);
+                    messageProxy?.Leave();
+                    messageProxy = new MessageProxy(userName, roomName, this);
                 }); ;
                 await Task.Run(() => {
+                    fileListProxy?.Leave();
                     fileListProxy = new FileListProxy(userName, roomName, this);
                 });
             }
+            disableSendUI(false);
         }
+
         private void filesView_MouseDoubleClick(object sender, MouseEventArgs e)
         {
             if (filesView.SelectedItem != null)
@@ -169,45 +178,67 @@ namespace LobbyCLient
 
         private void newLobbyButton_Click(Object sender, RoutedEventArgs e)
         {
-            try
-            {
-
-                //make lobby textbox visible
-                newLobbyButton.Visibility = Visibility.Collapsed;
-                NewLobbyOption.Visibility= Visibility.Visible;
-            }
-            catch (Exception) { }
+            // Make lobby textbox visible
+            newLobbyButton.Visibility = Visibility.Collapsed;
+            NewLobbyOption.Visibility = Visibility.Visible;
         }
 
         private void newLobbyOption_Click(Object sender, RoutedEventArgs e)
         {
             try
             {
-
                 //add new room
                 lobbyInterface.MakeRoom(lobbyNameBox.Text);
+                List<string> roomNames;
+                List<uint> userCount;
+                lobbyInterface.FetchRoomData(out roomNames, out userCount);
+                LobbyListView.ItemsSource = roomNames;
 
                 //hide lobby textbox
                 newLobbyButton.Visibility = Visibility.Visible;
                 NewLobbyOption.Visibility = Visibility.Hidden;
-                
             }
-            catch (Exception) {
+            catch (Exception eee) 
+            {
+                Dispatcher.Invoke(() =>
+                {
+                    MessageBox.Show(eee.Message);
+                });
             }
         }
 
         private void sendMsg_Click(Object sender, RoutedEventArgs e)
         {
+            string tempUser = privateUserTo;
+            PrivateMessageToggle(false);
             try
             {
-                
-              
+                if (!privateUserTo.Equals(""))
+                {
+                    PrivateMessageToggle(true);
+                }
+                messageProxy.SendMessage(messageBox.Text, privateUserTo);
+                PrivateMessageToggle(false);
             }
-            catch (Exception ex)
+            catch (FaultException<UserNotFoundFault>)
             {
-                Console.WriteLine("Exceptionss");
-                
-                
+                PrivateMessagePopUpText.Dispatcher.BeginInvoke(new Action(() => { PrivateMessagePopUpText.Text = tempUser + " is not in the room. Message not sent."; }));
+            }
+            catch (Exception) { }
+            privateUserTo = "";
+        }
+
+        private void UserView_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+        {
+            if (!activeUsersView.SelectedItem.ToString().Equals(usernameBox.Text))
+            {
+                privateUserTo = activeUsersView.SelectedItem.ToString();
+                PrivateMessageToggle(true);
+            }
+            else
+            {
+                privateUserTo = "";
+                PrivateMessageToggle(false);
             }
         }
 
@@ -227,6 +258,63 @@ namespace LobbyCLient
         private void lobbyNameGo_Click(object sender, RoutedEventArgs e)
         {
 
+        }
+
+        private void chatView_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+
+        }
+
+
+
+        private void disableSendUI(Boolean option)
+        {
+            if (option)
+            {
+                roomNameBox.Dispatcher.BeginInvoke(new Action(() => { roomNameBox.Text = "Welcome. Please select lobby to join."; }));
+            }
+            sendMsgButton.Dispatcher.BeginInvoke(new Action(() => { sendMsgButton.IsEnabled = !option; }));
+            sendFileButton.Dispatcher.BeginInvoke(new Action(() => { sendFileButton.IsEnabled = !option; }));
+            messageBox.Dispatcher.BeginInvoke(new Action(() => {  messageBox.IsEnabled = !option; }));
+        }
+
+        private void activeUsersView_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+
+        }
+
+        private void CancelPrivateButton_Click(object sender, RoutedEventArgs e)
+        {
+            PrivateMessageToggle(false);
+            privateUserTo = "";
+        }
+
+        private void PrivateMessageToggle(Boolean option)
+        {
+            if (option)
+            {
+                PrivateMessagePopUp.Dispatcher.BeginInvoke(new Action(() => { PrivateMessagePopUp.Visibility = Visibility.Visible; }));
+                PrivateMessagePopUpText.Dispatcher.BeginInvoke(new Action(() => { PrivateMessagePopUpText.Text = "Sending private message to @" + privateUserTo; }));
+            }
+            else
+            {
+                Dispatcher.BeginInvoke(new Action(() => { PrivateMessagePopUp.Visibility = Visibility.Collapsed; }));
+            }
+        }
+
+        private void messageBox_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+        {
+            messageBox.Text = "";
+        }
+
+        private void lobbyNameBox_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+        {
+            lobbyNameBox.Text = "";
+        }
+
+        private void usernameBox_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+        {
+            usernameBox.Text = "";
         }
     }
 }

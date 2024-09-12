@@ -5,6 +5,7 @@ using System.Linq;
 using System.Reflection;
 using System.ServiceModel;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 
@@ -15,18 +16,21 @@ namespace LobbyServer
         // For lack of better options to enforce data model privacy, make this a singleton
         // Roughly equivalent to just making a data server with hardcoded IP
         private static readonly Lobby instance = new Lobby();
-        private Dictionary<string, LobbyServer> userConnections;
-        private Dictionary<string, Room> rooms;
-        private Lobby() {
-            userConnections = new Dictionary<string, LobbyServer>();
-            rooms = new Dictionary<string, Room>();
-        }
+        private readonly Dictionary<string, LobbyServer> userConnections = new Dictionary<string, LobbyServer>();
+        private readonly Dictionary<string, Room> rooms = new Dictionary<string, Room>();
+        private readonly Object userConnectionsLock = new Object();  // Lock class isn't available in this .NET ver
+        private readonly Object roomsLock = new Object();
+
+        private Lobby() { }
         public static Lobby GetInstance() { return instance; }
 
         public bool ValidateUser(string username)
         {
             // Check that the user exists at lobby-level
-            return userConnections.ContainsKey(username);
+            lock (userConnectionsLock)
+            {
+                return userConnections.ContainsKey(username);
+            }
         }
         
        
@@ -43,10 +47,18 @@ namespace LobbyServer
                 throw new FaultException<UnauthorisedUserFault>(fault, new FaultReason("Username cannot be blank."));
             }
 
+            if (!Regex.IsMatch(username, @"^[a-zA-Z0-9]+$"))
+            {
+                fault.problemType = "Username can only contain letters and numbers.";
+                throw new FaultException<UnauthorisedUserFault>(fault, new FaultReason("Username can only contain letters and numbers."));
+            }
 
             try
             {
-                userConnections.Add(username, lobbyServer);
+                lock (userConnectionsLock)
+                {
+                    userConnections.Add(username, lobbyServer);
+                }
             }
             catch (ArgumentException)
             {
@@ -61,36 +73,47 @@ namespace LobbyServer
         public void Leave(string username)
         {
             // Regardless of existence, remove from everywhere
-            foreach (Room room in rooms.Values) { room.Leave(username); }
-            userConnections.Remove(username);
+            lock (roomsLock)
+            {
+                foreach (Room room in rooms.Values) { room.Leave(username); }
+            }
+            lock (userConnectionsLock)
+            {
+                userConnections.Remove(username);
+            }
         }
 
         public void MakeRoom(string roomName, string owner)
         {
+            InvalidRoomFault fault = new InvalidRoomFault();
             try
             {
                 Room room = new Room(this, roomName, owner);
-                rooms.Add(roomName, room);
+                lock (roomsLock)
+                {
+                    rooms.Add(roomName, room);
+                }
             }
-            catch (ArgumentException e)
+            catch (ArgumentException)
             {
                 // Room already exists
-                InvalidRoomFault fault = new InvalidRoomFault();
                 fault.problemType = "Room already exists.";
                 throw new FaultException<InvalidRoomFault>(fault, new FaultReason("Room already exists."));
             }
+
         }
 
-        public void FetchRoomData(out List<string> roomNames, out List<uint> userCounts, out List<string> users)
+        public void FetchRoomData(out List<string> roomNames, out List<uint> userCounts)
         {
             roomNames = new List<string>();
             userCounts = new List<uint>();
-            users = new List<string>();
-            foreach (KeyValuePair<string, Room> entry in rooms)
+            lock (roomsLock)
             {
-                roomNames.Add(entry.Key);
-                userCounts.Add((uint)entry.Value.Users().Count());
-                users = entry.Value.Users();
+                foreach (KeyValuePair<string, Room> entry in rooms)
+                {
+                    roomNames.Add(entry.Key);
+                    userCounts.Add((uint)entry.Value.Users().Count());
+                }
             }
         }
 
@@ -98,7 +121,10 @@ namespace LobbyServer
         {
             try
             {
-                return rooms[roomName];
+                lock (roomsLock)
+                {
+                    return rooms[roomName];
+                }
             }
             catch (KeyNotFoundException)
             {
