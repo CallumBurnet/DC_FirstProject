@@ -110,7 +110,7 @@
                         </Grid.RowDefinitions>
 
                         <Button Name="sendMsgButton" Grid.Row="0" Margin="3px" Click="sendMsg_Click">Send</Button>
-                        <Button Name="attachFileButton" Grid.Row="1" Margin="3px" Click=" attachMsg_Click">Attach...</Button>
+                        <Button Name="sendFileButton" Grid.Row="1" Margin="3px" Click="sendFile_Click">Send a File</Button>
 
                     </Grid>
                     
@@ -119,6 +119,7 @@
 
 
             </Grid>
+
 
             <Grid Grid.Column="2">
                 <Grid.RowDefinitions>
@@ -155,3 +156,4 @@
     </Grid>
     
 </Window>
+

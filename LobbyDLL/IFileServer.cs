@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.ServiceModel;
 using System.IO;
 using LobbyDLL;
+using System.Threading;
 
 namespace LobbyDLL
 {
@@ -14,26 +15,29 @@ namespace LobbyDLL
     {
         [OperationContract]
         [FaultContract(typeof(InvalidRoomFault))]
-        void Join(string roomName, string username);
+        [FaultContract(typeof(UnauthorisedUserFault))]
+        [FaultContract(typeof(DuplicateConnectionFault))]
+        void Join(string roomName, string userName);
         [OperationContract]
         void Leave();
 
         [OperationContract]
+        [FaultContract(typeof(UnauthorisedUserFault))]
         [FaultContract(typeof(InvalidFileFault))]
-        void AddFile(File file);
+        void AddFile(RoomFile file);
 
-        [OperationContract] //Client Implementation of Callback ~ delegate example
-        [FaultContract(typeof(InvalidFileFault))]
-        HashSet<string> FetchFileNames(string username);
         [OperationContract]
+        [FaultContract(typeof(UnauthorisedUserFault))]
         [FaultContract(typeof(InvalidFileFault))]
-        File FetchFile(string username, string filename);
+        List<string> FetchFileNames();
+        [OperationContract]
+        [FaultContract(typeof(UnauthorisedUserFault))]
+        [FaultContract(typeof(InvalidFileFault))]
+        RoomFile FetchFile(string fileName);
     }
     public interface IFileServerCallback
     {
         [OperationContract(IsOneWay = true)]
         void FileChanged();
-
-
     }
 }

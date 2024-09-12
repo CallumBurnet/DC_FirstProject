@@ -12,6 +12,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Threading;
 
+
 namespace LobbyClient
 {
     public class MessageProxy : IRoomServerCallback //message proxy is also the implementation of the message callback

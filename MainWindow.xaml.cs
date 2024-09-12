@@ -26,9 +26,10 @@ namespace LobbyCLient
     public partial class MainWindow : Window
     {
         //Declare interface variables for file, lobby and room servers.
-        private IFileServer fileInterface;
         private ILobbyServer lobbyInterface;
         private MessageProxy messageProxy;
+        private FileListProxy fileListProxy;
+        DownloadWindow downloadWindow;
         private Boolean loggedIn;
         private string privateUserTo;
 
@@ -53,12 +54,13 @@ namespace LobbyCLient
             mainScreen.Visibility = Visibility.Collapsed;
             loginScreen.Visibility = Visibility.Visible;
 
-            //Create a listener for the double click on a room
+            //Create a listener for the double click on a room or room items
             LobbyListView.MouseDoubleClick += LobbyListView_MouseDoubleClick;
             activeUsersView.MouseDoubleClick += UserView_MouseDoubleClick;
+            filesView.MouseDoubleClick += filesView_MouseDoubleClick;
 
+            // Reset message text box status
             disableSendUI(true);
-
             privateUserTo = "";
         }
 
@@ -70,7 +72,7 @@ namespace LobbyCLient
                 while (loggedIn)
                 {
                     await FetchandUpdateLobbyData();
-                    await Task.Delay(TimeSpan.FromSeconds(5)); //every 5 seconds
+                    await Task.Delay(TimeSpan.FromSeconds(1)); //every 1 seconds
                 }
             });
         }
@@ -113,10 +115,10 @@ namespace LobbyCLient
                 ErrorBox.Visibility = Visibility.Visible;
                 ErrorBox.Text = ex.Message + " Please try again.";
             }
-            catch (Exception ee)  // TODO: Should not catch all, instead debug why it fails and add a dedicated catch if reasonable
+            catch (Exception ex) 
             { 
                 ErrorBox.Visibility = Visibility.Visible;
-                ErrorBox.Text = " Please try again." + ee.Message;
+                ErrorBox.Text = " Please try again." + ex.Message;
             }
         }
 
@@ -125,6 +127,8 @@ namespace LobbyCLient
             // Leave existing room
             messageProxy?.Leave();
             messageProxy = null;
+            fileListProxy?.Leave();
+            fileListProxy = null;
 
             // Leave lobby
             loggedIn = false;
@@ -135,9 +139,6 @@ namespace LobbyCLient
             // Collapse main window and make login screen visible
             mainScreen.Visibility = Visibility.Collapsed;
             loginScreen.Visibility = Visibility.Visible;
-
-            // TODO: Call leave on message and file servers and set them to null locally 
-            // TODO: Send cancellation token to the lobby periodic updater
         }
 
         // Listview click
@@ -146,21 +147,33 @@ namespace LobbyCLient
 
             if(LobbyListView.SelectedItem != null)
             {
-                UpdateLobbyData();
-                // Leave existing room
-                messageProxy?.Leave();
-                messageProxy = null;  // Let it GC
-
-
                 // Room selection
                 string userName = lobbyInterface.Username; // Lobby interface method to return username
                 string roomName = LobbyListView.SelectedItem.ToString();
-                await Task.Run(() => {  // Prevent any UI freeze
+                roomNameBox.Text = roomName;  // Update room name label
+
+                // Join one at a time to avoid race conditions (should be fixed anyways once server locks are added)
+                await Task.Run(() => {
+                    messageProxy?.Leave();
                     messageProxy = new MessageProxy(userName, roomName, this);
+                }); ;
+                await Task.Run(() => {
+                    fileListProxy?.Leave();
+                    fileListProxy = new FileListProxy(userName, roomName, this);
                 });
-                roomNameBox.Text = LobbyListView.SelectedItem.ToString();  // Update room name label
             }
             disableSendUI(false);
+        }
+
+        private void filesView_MouseDoubleClick(object sender, MouseEventArgs e)
+        {
+            if (filesView.SelectedItem != null)
+            {
+                string selectedFileName = filesView.SelectedItem.ToString();
+                downloadWindow = fileListProxy.DownloadWindow;
+                downloadWindow.StartDownload(selectedFileName);
+                downloadWindow.Show();
+            }
         }
 
         private void newLobbyButton_Click(Object sender, RoutedEventArgs e)
@@ -229,13 +242,17 @@ namespace LobbyCLient
             }
         }
 
-        private void attachMsg_Click(Object sender, RoutedEventArgs e)
-        {
-            try
-            {
 
+        private void sendFile_Click(Object sender, RoutedEventArgs e)
+        {
+            if (fileListProxy == null)
+            {
+                MessageBox.Show("Please join a room before sending a file.");
             }
-            catch (Exception) { }
+            else
+            {
+                fileListProxy.UploadFile();
+            }
         }
 
         private void lobbyNameGo_Click(object sender, RoutedEventArgs e)
@@ -257,7 +274,7 @@ namespace LobbyCLient
                 roomNameBox.Dispatcher.BeginInvoke(new Action(() => { roomNameBox.Text = "Welcome. Please select lobby to join."; }));
             }
             sendMsgButton.Dispatcher.BeginInvoke(new Action(() => { sendMsgButton.IsEnabled = !option; }));
-            attachFileButton.Dispatcher.BeginInvoke(new Action(() => { attachFileButton.IsEnabled = !option; }));
+            sendFileButton.Dispatcher.BeginInvoke(new Action(() => { sendFileButton.IsEnabled = !option; }));
             messageBox.Dispatcher.BeginInvoke(new Action(() => {  messageBox.IsEnabled = !option; }));
         }
 
@@ -300,5 +317,4 @@ namespace LobbyCLient
             usernameBox.Text = "";
         }
     }
-
 }
