@@ -3,8 +3,10 @@ using LobbyDLL;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Runtime.CompilerServices;
 using System.ServiceModel;
+using System.ServiceModel.Channels;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -20,6 +22,7 @@ namespace LobbyClient
         private string username;
         private string roomName;
         private MainWindow window;
+        private List<string> messages;
         CancellationTokenSource cancelTokenSource;  // For threading cleanup
         CancellationToken cancelToken;
 
@@ -32,6 +35,8 @@ namespace LobbyClient
             this.username = username;
             this.roomName = roomName;
             server.Join(roomName, username);
+            messages = new List<string>();
+            window.chatView.Dispatcher.Invoke(new Action(() => window.chatView.ItemsSource = messages));
 
             // Also periodically refresh room user list
             cancelTokenSource = new CancellationTokenSource();
@@ -39,13 +44,38 @@ namespace LobbyClient
             this.window = window;
             UpdateUserList();
         }
-        public void SendPublic(string message)
+        public async void SendMessage(string message, string toUser)
         {
-            server.SendPublicMessage(message, this.username);
+            await Task.Run(() =>
+            {
+                if (!toUser.Equals(""))
+                {
+                    messages.Insert(0, username + ": @" + toUser + " " + message);
+                    UpdateChatView();
+                    server.SendPrivateMessage("@" + toUser + " " + message, this.username, toUser);
+                }
+                else
+                {
+                    messages.Insert(0, username + ": " + message);
+                    UpdateChatView();
+                    server.SendPublicMessage(message, this.username);
+                }
+            });
         }
-        public void PushMessage(string message)
+
+        public async void PushMessage(string message)
         {
-            
+            await Task.Run(() =>
+            {
+                messages.Insert(0, message);
+                UpdateChatView();
+            });
+        }
+
+        private void UpdateChatView()
+        {
+            window.chatView.Dispatcher.Invoke(new Action(() => window.chatView.Items.Refresh()));
+            window.chatView.Dispatcher.Invoke(new Action(() => window.chatView.ScrollIntoView(messages[0])));
         }
 
         public void Leave()
@@ -53,6 +83,8 @@ namespace LobbyClient
             // Clean up local threads and then unsubscribe
             cancelTokenSource.Cancel();
             server.Leave();
+            window.activeUsersView.Dispatcher.Invoke(new Action(() => window.activeUsersView.ItemsSource = null));
+            window.chatView.Dispatcher.Invoke(new Action(() => window.chatView.ItemsSource = null));
         }
 
         private async void UpdateUserList()  // Thread that periodically updates the active users in the current room

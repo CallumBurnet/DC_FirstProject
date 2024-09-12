@@ -113,7 +113,7 @@ namespace LobbyServer
         public void SendPrivateMessage(string message, string from, string to)
         {
             // Ensure the target is in the room
-            if (!Users().Contains(from))
+            if (!userConnections.ContainsKey(to))
             {
                 UserNotFoundFault fault = new UserNotFoundFault();
                 fault.problemType = "Target user not in lobby.";

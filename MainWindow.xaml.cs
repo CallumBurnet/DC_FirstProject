@@ -30,6 +30,7 @@ namespace LobbyCLient
         private ILobbyServer lobbyInterface;
         private MessageProxy messageProxy;
         private Boolean loggedIn;
+        private string privateUserTo;
 
         public MainWindow()
         {
@@ -54,8 +55,11 @@ namespace LobbyCLient
 
             //Create a listener for the double click on a room
             LobbyListView.MouseDoubleClick += LobbyListView_MouseDoubleClick;
+            activeUsersView.MouseDoubleClick += UserView_MouseDoubleClick;
 
             disableSendUI(true);
+
+            privateUserTo = "";
         }
 
         private async void UpdateLobbyData()  // Thread that periodically updates the full room list
@@ -107,12 +111,12 @@ namespace LobbyCLient
             catch (FaultException<UnauthorisedUserFault> ex)
             {
                 ErrorBox.Visibility = Visibility.Visible;
-                ErrorBox.Text = ex.Message + "Username not valid. Please try again.";
+                ErrorBox.Text = ex.Message + " Please try again.";
             }
             catch (Exception ee)  // TODO: Should not catch all, instead debug why it fails and add a dedicated catch if reasonable
             { 
                 ErrorBox.Visibility = Visibility.Visible;
-                ErrorBox.Text = "Please try again." + ee.Message;
+                ErrorBox.Text = " Please try again." + ee.Message;
             }
         }
 
@@ -124,7 +128,9 @@ namespace LobbyCLient
 
             // Leave lobby
             loggedIn = false;
+            disableSendUI(true);
             lobbyInterface.LeaveLobby();
+            LobbyListView.SelectedItem = null;
 
             // Collapse main window and make login screen visible
             mainScreen.Visibility = Visibility.Collapsed;
@@ -140,9 +146,11 @@ namespace LobbyCLient
 
             if(LobbyListView.SelectedItem != null)
             {
+                UpdateLobbyData();
                 // Leave existing room
                 messageProxy?.Leave();
                 messageProxy = null;  // Let it GC
+
 
                 // Room selection
                 string userName = lobbyInterface.Username; // Lobby interface method to return username
@@ -168,22 +176,57 @@ namespace LobbyCLient
             {
                 //add new room
                 lobbyInterface.MakeRoom(lobbyNameBox.Text);
+                List<string> roomNames;
+                List<uint> userCount;
+                lobbyInterface.FetchRoomData(out roomNames, out userCount);
+                LobbyListView.ItemsSource = roomNames;
 
                 //hide lobby textbox
                 newLobbyButton.Visibility = Visibility.Visible;
                 NewLobbyOption.Visibility = Visibility.Hidden;
             }
-            catch (Exception) {
+            catch (Exception eee) 
+            {
+                Dispatcher.Invoke(() =>
+                {
+                    MessageBox.Show(eee.Message);
+                });
             }
         }
 
         private void sendMsg_Click(Object sender, RoutedEventArgs e)
         {
+            string tempUser = privateUserTo;
+            PrivateMessageToggle(false);
             try
             {
-
+                if (!privateUserTo.Equals(""))
+                {
+                    PrivateMessageToggle(true);
+                }
+                messageProxy.SendMessage(messageBox.Text, privateUserTo);
+                PrivateMessageToggle(false);
+            }
+            catch (FaultException<UserNotFoundFault>)
+            {
+                PrivateMessagePopUpText.Dispatcher.BeginInvoke(new Action(() => { PrivateMessagePopUpText.Text = tempUser + " is not in the room. Message not sent."; }));
             }
             catch (Exception) { }
+            privateUserTo = "";
+        }
+
+        private void UserView_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+        {
+            if (!activeUsersView.SelectedItem.ToString().Equals(usernameBox.Text))
+            {
+                privateUserTo = activeUsersView.SelectedItem.ToString();
+                PrivateMessageToggle(true);
+            }
+            else
+            {
+                privateUserTo = "";
+                PrivateMessageToggle(false);
+            }
         }
 
         private void attachMsg_Click(Object sender, RoutedEventArgs e)
@@ -205,11 +248,56 @@ namespace LobbyCLient
 
         }
 
+
+
         private void disableSendUI(Boolean option)
         {
+            if (option)
+            {
+                roomNameBox.Dispatcher.BeginInvoke(new Action(() => { roomNameBox.Text = "Welcome. Please select lobby to join."; }));
+            }
             sendMsgButton.Dispatcher.BeginInvoke(new Action(() => { sendMsgButton.IsEnabled = !option; }));
             attachFileButton.Dispatcher.BeginInvoke(new Action(() => { attachFileButton.IsEnabled = !option; }));
             messageBox.Dispatcher.BeginInvoke(new Action(() => {  messageBox.IsEnabled = !option; }));
+        }
+
+        private void activeUsersView_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+
+        }
+
+        private void CancelPrivateButton_Click(object sender, RoutedEventArgs e)
+        {
+            PrivateMessageToggle(false);
+            privateUserTo = "";
+        }
+
+        private void PrivateMessageToggle(Boolean option)
+        {
+            if (option)
+            {
+                PrivateMessagePopUp.Dispatcher.BeginInvoke(new Action(() => { PrivateMessagePopUp.Visibility = Visibility.Visible; }));
+                PrivateMessagePopUpText.Dispatcher.BeginInvoke(new Action(() => { PrivateMessagePopUpText.Text = "Sending private message to @" + privateUserTo; }));
+            }
+            else
+            {
+                Dispatcher.BeginInvoke(new Action(() => { PrivateMessagePopUp.Visibility = Visibility.Collapsed; }));
+            }
+        }
+
+        private void messageBox_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+        {
+            messageBox.Text = "";
+        }
+
+        private void lobbyNameBox_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+        {
+            lobbyNameBox.Text = "";
+        }
+
+        private void usernameBox_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+        {
+            usernameBox.Text = "";
         }
     }
 
