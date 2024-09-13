@@ -69,6 +69,16 @@ namespace LobbyClient
         {
             FetchNewFileList();
         }
+        public void StartDownload(string selectedItem)
+        {
+            if (selectedItem != null)
+            {
+
+                downloadWindow = new DownloadWindow(this);
+                downloadWindow.StartDownload(selectedItem);
+
+            }
+        }
         public async Task<bool> DownloadFile(string fileName, IProgress<int> progress, CancellationToken token)
         {
             Microsoft.Win32.SaveFileDialog saveFileDialog = new Microsoft.Win32.SaveFileDialog();

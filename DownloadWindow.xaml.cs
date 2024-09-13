@@ -59,7 +59,7 @@ namespace LobbyClient
         private void CancelDownload_Click(object sender, RoutedEventArgs e)
         {
             cts.Cancel();
-            this.Hide();
+            this.Close();
         }
     }
 }

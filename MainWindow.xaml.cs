@@ -29,7 +29,6 @@ namespace LobbyCLient
         private ILobbyServer lobbyInterface;
         private MessageProxy messageProxy;
         private FileListProxy fileListProxy;
-        DownloadWindow downloadWindow;
         private Boolean loggedIn;
         private string privateUserTo;
 
@@ -172,14 +171,9 @@ namespace LobbyCLient
 
         private void filesView_MouseDoubleClick(object sender, MouseEventArgs e)
         {
-            if (filesView.SelectedItem != null)
-            {
-                string selectedFileName = filesView.SelectedItem.ToString();
-                downloadWindow = fileListProxy.DownloadWindow;
-                downloadWindow.StartDownload(selectedFileName);
-                filesView.SelectedItem = null;
-                
-            }
+            string selectedFileName = filesView.SelectedItem.ToString();
+
+            fileListProxy.StartDownload(selectedFileName);
         }
 
         private void newLobbyButton_Click(Object sender, RoutedEventArgs e)
