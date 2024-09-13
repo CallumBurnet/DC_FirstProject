@@ -135,6 +135,7 @@ namespace LobbyCLient
             disableSendUI(true);
             lobbyInterface.LeaveLobby();
             LobbyListView.SelectedItem = null;
+            usernameBox.Text = "";
 
             // Collapse main window and make login screen visible
             mainScreen.Visibility = Visibility.Collapsed;
@@ -180,6 +181,7 @@ namespace LobbyCLient
         {
             // Make lobby textbox visible
             newLobbyButton.Visibility = Visibility.Collapsed;
+            lobbyNameBox.Text = "";
             NewLobbyOption.Visibility = Visibility.Visible;
         }
 
@@ -219,6 +221,7 @@ namespace LobbyCLient
                 }
                 messageProxy.SendMessage(messageBox.Text, privateUserTo);
                 PrivateMessageToggle(false);
+                messageBox.Text = "";
             }
             catch (FaultException<UserNotFoundFault>)
             {
@@ -255,18 +258,6 @@ namespace LobbyCLient
             }
         }
 
-        private void lobbyNameGo_Click(object sender, RoutedEventArgs e)
-        {
-
-        }
-
-        private void chatView_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-
-        }
-
-
-
         private void disableSendUI(Boolean option)
         {
             if (option)
@@ -276,11 +267,6 @@ namespace LobbyCLient
             sendMsgButton.Dispatcher.BeginInvoke(new Action(() => { sendMsgButton.IsEnabled = !option; }));
             sendFileButton.Dispatcher.BeginInvoke(new Action(() => { sendFileButton.IsEnabled = !option; }));
             messageBox.Dispatcher.BeginInvoke(new Action(() => {  messageBox.IsEnabled = !option; }));
-        }
-
-        private void activeUsersView_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-
         }
 
         private void CancelPrivateButton_Click(object sender, RoutedEventArgs e)
@@ -305,16 +291,6 @@ namespace LobbyCLient
         private void messageBox_MouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
             messageBox.Text = "";
-        }
-
-        private void lobbyNameBox_MouseDoubleClick(object sender, MouseButtonEventArgs e)
-        {
-            lobbyNameBox.Text = "";
-        }
-
-        private void usernameBox_MouseDoubleClick(object sender, MouseButtonEventArgs e)
-        {
-            usernameBox.Text = "";
         }
     }
 }
