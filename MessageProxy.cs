@@ -49,17 +49,26 @@ namespace LobbyClient
         {
             await Task.Run(() =>
             {
-                if (!toUser.Equals(""))
+                try
                 {
-                    messages.Insert(0, username + ": @" + toUser + " " + message);
-                    UpdateChatView();
-                    server.SendPrivateMessage("@" + toUser + " " + message, this.username, toUser);
+                    if (!toUser.Equals(""))
+                    {
+                        messages.Insert(0, username + ": @" + toUser + " " + message);
+                        UpdateChatView();
+                        server.SendPrivateMessage("@" + toUser + " " + message, this.username, toUser);
+                    }
+                    else
+                    {
+                        messages.Insert(0, username + ": " + message);
+                        UpdateChatView();
+                        server.SendPublicMessage(message, this.username);
+
+                    }
                 }
-                else
+                catch (Exception ex) 
                 {
-                    messages.Insert(0, username + ": " + message);
-                    UpdateChatView();
-                    server.SendPublicMessage(message, this.username);
+                    window.Dispatcher.Invoke(new Action(() => { window.PrivateMessagePopUpText.Text = toUser + " is not in the room. Message not sent."; }));
+                    window.Dispatcher.Invoke(new Action(() => { window.PrivateMessagePopUp.Visibility = System.Windows.Visibility.Visible; }));
                 }
             });
         }
