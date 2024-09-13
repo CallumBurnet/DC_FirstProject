@@ -74,7 +74,7 @@ namespace LobbyClient
             downloadWindow = new DownloadWindow(this);
             downloadWindow.StartDownload(selectedItem);
         }
-        public async Task<bool> DownloadFile(string fileName, IProgress<int> progress, CancellationToken token)
+        public async Task<bool> DownloadFile(string fileName, IProgress<int> progress, CancellationToken token, DownloadWindow downloadWindow)
         {
             Microsoft.Win32.SaveFileDialog saveFileDialog = new Microsoft.Win32.SaveFileDialog();
             saveFileDialog.FileName = fileName;
@@ -82,6 +82,7 @@ namespace LobbyClient
             bool? result = saveFileDialog.ShowDialog();
             if (result == true)
             {
+                downloadWindow.Show();
                 string savePath = saveFileDialog.FileName;
                 await Task.Run(() =>
                 {
@@ -90,24 +91,26 @@ namespace LobbyClient
                     //Save the file to the chosen path
                     if (file.file is TextFileItem textFile)
                     {
-                        File.WriteAllText(savePath, textFile.TextContent);
-
-                        for(int i = 0; i <= 10; i++)
+                        for (int i = 0; i <= 50; i++)
                         {
                             token.ThrowIfCancellationRequested();
-                            progress.Report(i*10);
+                            progress.Report(i * 2);
                             Thread.Sleep(10);
                         }
+                        File.WriteAllText(savePath, textFile.TextContent);
+                       
+                        
                     }
                     else if (file.file is ImageFileItem imageFile)
                     {
-                        imageFile.Bitmap.Save(savePath);
-                        for (int i = 0; i <= 10; i++)
+                        for (int i = 0; i <= 50; i++)
                         {
                             token.ThrowIfCancellationRequested();
-                            progress.Report(i * 10);
+                            progress.Report(i * 2);
                             Thread.Sleep(10);
                         }
+                        imageFile.Bitmap.Save(savePath);
+                       
                     }
                 }, token);
                 return true;
