@@ -188,6 +188,13 @@ namespace LobbyServer
                 log("File '" + file + "' has failed to upload. " + fault.problemType);
                 throw new FaultException<InvalidFileFault>(fault, new FaultReason("File already exists."));
             }
+            catch (Exception ex)
+            {
+                InvalidFileFault fault = new InvalidFileFault();
+                fault.problemType = ex.Message;
+                log("File '" + file + "' has failed to upload. " + ex.Message);
+                throw new FaultException<InvalidFileFault>(fault, new FaultReason("File already exists."));
+            }
             log("File '" + file.name + "' has been uploaded.");
 
         }
