@@ -37,21 +37,16 @@ namespace LobbyServer
 
         public void AddFile(RoomFile file)
         {
-            try
+            if (room == null || string.IsNullOrEmpty(username))
             {
-                if (room == null || string.IsNullOrEmpty(username))
-                {
-                    UnauthorisedUserFault fault = new UnauthorisedUserFault();
-                    fault.problemType = "User not in room.";
-                    throw new FaultException<UnauthorisedUserFault>(fault, new FaultReason("User not in room."));
-                }
-                else
-                {
-                    room.AddFile(file);  // May InvalidFileFault
-                }
+                UnauthorisedUserFault fault = new UnauthorisedUserFault();
+                fault.problemType = "User not in room.";
+                throw new FaultException<UnauthorisedUserFault>(fault, new FaultReason("User not in room."));
             }
-            catch (Exception) { }
-
+            else
+            {
+                room.AddFile(file);  // May InvalidFileFault
+            }
         }
 
         internal void RelayFileChange()

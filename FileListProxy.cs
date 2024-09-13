@@ -65,10 +65,6 @@ namespace LobbyClient
         {
             return server.FetchFile(fileName);
         }
-        public void AddFile(RoomFile file)
-        {
-            server.AddFile(file);
-        }
         public void FileChanged()
         {
             FetchNewFileList();
@@ -124,9 +120,19 @@ namespace LobbyClient
                     string selectedFilePath = openFileDialog.FileName;
                     RoomFile roomFile = CreateFileItem(selectedFilePath);
 
-                    if (roomFile != null)
+                    try
                     {
-                        AddFile(roomFile);
+                        if (roomFile != null)
+                        {
+                            server.AddFile(roomFile);
+                        }
+                    }
+                    catch (FaultException<InvalidFileFault> ex)
+                    {
+                        window.Dispatcher.Invoke(() =>
+                        {
+                            MessageBox.Show(ex.Message);
+                        });
                     }
                 }
             });
