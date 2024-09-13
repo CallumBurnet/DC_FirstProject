@@ -7,15 +7,17 @@ using System.Threading.Tasks;
 using LobbyDLL;
 namespace LobbyServer
 {
-    internal class FileServer
+    internal class FileServer : IFileServer
     {
         private Room room;
         private string username;
+        private readonly IFileServerCallback callback;
 
         public FileServer()
         {
             room = null;
             username = "";
+            callback = OperationContext.Current.GetCallbackChannel<IFileServerCallback>();
         }
 
         // Doesn't seem like it's possible to pass constructor params, so use a manual join and guards
@@ -31,27 +33,29 @@ namespace LobbyServer
         public void Leave()
         {
             room.Leave(username);
-            // Extra disconnect logic should go here, though I think they would already be deauthorised...
         }
 
         public void AddFile(RoomFile file)
         {
-            if (room == null || username == "")
+            if (room == null || string.IsNullOrEmpty(username))
             {
                 UnauthorisedUserFault fault = new UnauthorisedUserFault();
                 fault.problemType = "User not in room.";
                 throw new FaultException<UnauthorisedUserFault>(fault, new FaultReason("User not in room."));
             }
-
-            room.AddFile(file);  // May InvalidFileFault
+            else
+            {
+                room.AddFile(file);  // May InvalidFileFault
+            }
         }
 
         internal void RelayFileChange()
         {
-            OperationContext.Current.GetCallbackChannel<IFileServerCallback>().FileChanged();
+            // Just ping the user that file list changed
+            callback.FileChanged();
         }
 
-        public List<string> FetchFilenames()
+        public List<string> FetchFileNames()
         {
             if (room == null || username == "")
             {
@@ -59,7 +63,6 @@ namespace LobbyServer
                 fault.problemType = "User not in room.";
                 throw new FaultException<UnauthorisedUserFault>(fault, new FaultReason("User not in room."));
             }
-
             return room.FetchFilenames();
         }
 
@@ -71,7 +74,6 @@ namespace LobbyServer
                 fault.problemType = "User not in room.";
                 throw new FaultException<UnauthorisedUserFault>(fault, new FaultReason("User not in room."));
             }
-
             return room.FetchFile(filename);  // May InvalidFileFault
         }
     }

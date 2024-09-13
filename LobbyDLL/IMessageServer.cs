@@ -16,14 +16,16 @@ namespace LobbyDLL
         void Join(string roomName, string username);
         [OperationContract]
         void Leave();
+        [OperationContract]
+        [FaultContract(typeof(UnauthorisedUserFault))]
+        List<string> FetchRoomUsers();
 
 
-        [OperationContract(IsOneWay = true)]
-        [FaultContract(typeof(DuplicateConnectionFault))]
+        [OperationContract]
+        [FaultContract(typeof(UserNotFoundFault))]
 
         void SendPrivateMessage(string username, string from, string to);
         [OperationContract(IsOneWay = true)]
-        [FaultContract(typeof(DuplicateConnectionFault))]
         void SendPublicMessage(string username, string from);
     }
     public interface IRoomServerCallback

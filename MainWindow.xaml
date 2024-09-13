@@ -14,7 +14,7 @@
 
         <StackPanel Name="loginScreen" Width="200px" Height="auto" VerticalAlignment="Center"  Grid.Column="0" Visibility="Collapsed">
             <TextBlock Margin="5px" Text="Username:" />
-            <TextBox Name="usernameBox" Text="" Margin="5px"/>
+            <TextBox Name="usernameBox" Text="" Margin="5px" />
             <Button  Name="loginButton" Margin="5px" Click="loginButton_Click">Login</Button>
             <TextBlock Name="ErrorBox" Visibility="Collapsed" TextWrapping="Wrap" Margin="5px" Text="Username taken. Please try again." Foreground="Red"/>
         </StackPanel>
@@ -62,20 +62,47 @@
 
             <Grid Grid.Column="1">
             <Grid.RowDefinitions>
-                <RowDefinition Height="5*"/>
-                <RowDefinition Height="1*"/>
+                <RowDefinition Height="auto"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="auto"/>
+                <RowDefinition Height="50px"/>
             </Grid.RowDefinitions>
+                <Border BorderBrush="Black" BorderThickness="1px 1px 1px 0px" Grid.Row="0">
+                    <TextBlock Name="roomNameBox" FontWeight="Bold" Grid.Row="0" Margin="3px" Text="Welcome. Please select lobby to join."/>
+                </Border>
+                <ListView BorderThickness="1px" BorderBrush="Black" Grid.Row="1" Name="chatView" >
+                    <ListView.ItemContainerStyle>
+                        <Style TargetType="{x:Type ListBoxItem}" BasedOn="{StaticResource {x:Type ListBoxItem}}">
+                            <Setter Property="DockPanel.Dock"
+                        Value="Bottom" />
+                        </Style>
+                    </ListView.ItemContainerStyle>
+                    <ListBox.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <DockPanel LastChildFill="False" />
+                        </ItemsPanelTemplate>
+                    </ListBox.ItemsPanel>
+                </ListView>
 
-             <ListView BorderThickness="1px" BorderBrush="Black" Grid.Row="0" Name="chatView"/>
+                <Border BorderBrush="Black" BorderThickness="1px 0px 1px 1px" Grid.Row="2">
+                    <Grid Grid.Row="2" Name="PrivateMessagePopUp" Visibility="Collapsed" >
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="auto"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Name="PrivateMessagePopUpText" Text="Sending as private message to @" Margin="3px"  Grid.Column="0"/>
+                        <Button Name="CancelPrivateButton" Click="CancelPrivateButton_Click"  Grid.Column="1" Margin="3px" Padding="3px">X</Button>
+                    </Grid>
+                </Border>
 
-                <Border BorderBrush="Black" BorderThickness="1px 0px 1px 1px" Grid.Row="1">
-                    <Grid Grid.Row="1" >
+                <Border BorderBrush="Black" BorderThickness="1px 0px 1px 1px" Grid.Row="3">
+                    <Grid Grid.Row="3" >
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="3*"/>
                         <ColumnDefinition Width="1*"/>
                     </Grid.ColumnDefinitions>
 
-                    <TextBox Name="messageBox" Grid.Column="0" Margin="3px" Text="Type Message..."/>
+                    <TextBox Name="messageBox" Grid.Column="0" Margin="3px" Text="Type Message..." MouseDoubleClick="messageBox_MouseDoubleClick"/>
                     <Grid Grid.Column="1">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="*"/>
@@ -83,7 +110,7 @@
                         </Grid.RowDefinitions>
 
                         <Button Name="sendMsgButton" Grid.Row="0" Margin="3px" Click="sendMsg_Click">Send</Button>
-                        <Button Name="attachFileButton" Grid.Row="1" Margin="3px" Click=" attachMsg_Click">Attach...</Button>
+                        <Button Name="sendFileButton" Grid.Row="1" Margin="3px" Click="sendFile_Click">Send a File</Button>
 
                     </Grid>
                     
@@ -92,6 +119,7 @@
 
 
             </Grid>
+
 
             <Grid Grid.Column="2">
                 <Grid.RowDefinitions>
@@ -128,3 +156,4 @@
     </Grid>
     
 </Window>
+
