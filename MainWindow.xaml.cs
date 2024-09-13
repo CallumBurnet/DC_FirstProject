@@ -281,20 +281,6 @@ namespace LobbyCLient
                     fileListProxy.UploadFile();
                 }
             }
-            catch (FaultException<InvalidFileFault> ex)
-            {
-                Dispatcher.Invoke(() =>
-                {
-                    MessageBox.Show(ex.Message);
-                });
-            }
-            catch (FaultException<InvalidRoomFault> ex)
-            {
-                Dispatcher.Invoke(() =>
-                {
-                    MessageBox.Show(ex.Message);
-                });
-            }
             catch (Exception ex)
             {
                 Dispatcher.Invoke(() =>

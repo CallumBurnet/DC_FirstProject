@@ -50,9 +50,7 @@ namespace LobbyServer
                     room.AddFile(file);  // May InvalidFileFault
                 }
             }
-            catch (Exception e) 
-            {
-            }
+            catch (Exception) { }
 
         }
 
