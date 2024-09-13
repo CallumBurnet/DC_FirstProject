@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.ServiceModel;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -44,12 +45,14 @@ namespace LobbyServer
             {
                 // Guard against known "unassigned" state
                 fault.problemType = "Username cannot be blank.";
+
                 throw new FaultException<UnauthorisedUserFault>(fault, new FaultReason("Username cannot be blank."));
             }
 
             if (!Regex.IsMatch(username, @"^[a-zA-Z0-9]+$"))
             {
                 fault.problemType = "Username can only contain letters and numbers.";
+                log("Attempt to join with username \"" + username + "\" failed. Usernames can only include letters and numbers.");
                 throw new FaultException<UnauthorisedUserFault>(fault, new FaultReason("Username can only contain letters and numbers."));
             }
 
@@ -64,10 +67,11 @@ namespace LobbyServer
             {
                 // User not unique, so deny
                 // TODO: Might rename to UserAuthorisationFault later?
-                Console.WriteLine("Catch occured");
+                log("Attempt to join with username \"" + username + "\" failed. Username is taken by another user.");
                 fault.problemType = "Username is taken.";
                 throw new FaultException<UnauthorisedUserFault>(fault, new FaultReason("Username is taken."));
             }
+            log("User \""+ username +"\" has joined the lobby.");
         }
 
         public void Leave(string username)
@@ -75,11 +79,16 @@ namespace LobbyServer
             // Regardless of existence, remove from everywhere
             lock (roomsLock)
             {
-                foreach (Room room in rooms.Values) { room.Leave(username); }
+                foreach (Room room in rooms.Values) 
+                { 
+                    room.Leave(username); 
+                    log("User \""+ username + "\" has been removed from room " + room.GetName());
+                }
             }
             lock (userConnectionsLock)
             {
                 userConnections.Remove(username);
+                log("User \"" + username + "\" has been removed from the lobby");
             }
         }
 
@@ -98,9 +107,10 @@ namespace LobbyServer
             {
                 // Room already exists
                 fault.problemType = "Room already exists.";
+                log("Attempt to create room \"" + roomName + "\" has failed. Room already exists.");
                 throw new FaultException<InvalidRoomFault>(fault, new FaultReason("Room already exists."));
             }
-
+            log("Room \"" + roomName + "\" has been created.");
         }
 
         public void FetchRoomData(out List<string> roomNames, out List<uint> userCounts)
@@ -132,6 +142,12 @@ namespace LobbyServer
                 fault.problemType = "Room does not exist.";
                 throw new FaultException<InvalidRoomFault>(fault, new FaultReason("Room does not exist."));
             }
+        }
+
+        [MethodImpl(MethodImplOptions.Synchronized)]
+        private void log(string message)
+        {
+            Console.WriteLine(message);
         }
     }
 }

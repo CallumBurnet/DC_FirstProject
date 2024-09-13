@@ -65,25 +65,6 @@ namespace LobbyClient
         {
             return server.FetchFile(fileName);
         }
-        public void AddFile(RoomFile file)
-        {
-            try
-            {
-                server.AddFile(file);
-            }
-            catch (FaultException<InvalidFileFault> ex)
-            {
-                Console.WriteLine($"File fault: {ex.Detail.problemType}");
-            }
-            catch (FaultException<InvalidRoomFault> ex)
-            {
-                Console.WriteLine($"Room fault: {ex.Detail.problemType}");
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Unexpected error: {ex.Message}");
-            }
-        }
         public void FileChanged()
         {
             FetchNewFileList();
@@ -139,9 +120,19 @@ namespace LobbyClient
                     string selectedFilePath = openFileDialog.FileName;
                     RoomFile roomFile = CreateFileItem(selectedFilePath);
 
-                    if (roomFile != null)
+                    try
                     {
-                        AddFile(roomFile);
+                        if (roomFile != null)
+                        {
+                            server.AddFile(roomFile);
+                        }
+                    }
+                    catch (FaultException<InvalidFileFault> ex)
+                    {
+                        window.Dispatcher.Invoke(() =>
+                        {
+                            MessageBox.Show(ex.Message);
+                        });
                     }
                 }
             });
@@ -179,12 +170,14 @@ namespace LobbyClient
                 }
                 else
                 {
-                    MessageBox.Show("Unsupported file type.");
+                    Console.WriteLine("Unsupported file type. Upload failed.");
+                    MessageBox.Show("Unsupported file type. Only bmp and png supported.");
                     return null;
                 }
             }
             else
             {
+                Console.WriteLine("File upload cannot exceed 3MB. Upload failed.");
                 MessageBox.Show("File upload cannot exceed 3MB.");
                 return null;
             }
