@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.ServiceModel;
+using System.ServiceModel.Channels;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -22,7 +23,7 @@ namespace LobbyServer
     internal class Room  // Won't move to DLL until we need it to be public
     {
         private readonly Lobby lobby;
-        private readonly string name;
+        public readonly string name;
         private readonly string owner;
         private readonly Dictionary<string, ServerStruct> userConnections = new Dictionary<string, ServerStruct>();
         private readonly Dictionary<string, RoomFile> files = new Dictionary<string, RoomFile>();
@@ -52,6 +53,7 @@ namespace LobbyServer
             {
                 UnauthorisedUserFault fault = new UnauthorisedUserFault();
                 fault.problemType = "User not in lobby.";
+                log(username + "'s attempt to join the lobby failed as user is not in the lobby.");
                 throw new FaultException<UnauthorisedUserFault>(fault, new FaultReason("User not in lobby."));
             }
 
@@ -64,6 +66,7 @@ namespace LobbyServer
                     {
                         DuplicateConnectionFault fault = new DuplicateConnectionFault();
                         fault.problemType = "User already connected to the message server.";
+                        log(username + "'s attemp to connect to message server failed due to already being connected to room '" + name + "'.");
                         throw new FaultException<DuplicateConnectionFault>(fault, new FaultReason("User already connected to the message server."));
                     }
                     else
@@ -77,6 +80,7 @@ namespace LobbyServer
                     userConnections.Add(username, new ServerStruct() { MessageServer = messageServer });
                 }
             }
+            log(username + " has been subscribed to the message server for room '" + name + "'.");
         }
 
         public void Join(string username, FileServer fileServer)
@@ -86,6 +90,7 @@ namespace LobbyServer
             {
                 UnauthorisedUserFault fault = new UnauthorisedUserFault();
                 fault.problemType = "User not in lobby.";
+                log(username + "'s attempt to join the lobby failed as user is not in the lobby.");
                 throw new FaultException<UnauthorisedUserFault>(fault, new FaultReason("User not in lobby."));
             }
 
@@ -97,7 +102,8 @@ namespace LobbyServer
                     if (userConnections[username].MessageServer == null)
                     {
                         DuplicateConnectionFault fault = new DuplicateConnectionFault();
-                        fault.problemType = "User already connected to the file server.";
+                        fault.problemType = "User already connected to the file server";
+                        log(username + "'s attemp to connect to message server failed due to already being connected to room '" + name + "'.");
                         throw new FaultException<DuplicateConnectionFault>(fault, new FaultReason("User already connected to the file server."));
                     }
                     else
@@ -111,6 +117,7 @@ namespace LobbyServer
                     userConnections.Add(username, new ServerStruct() { FileServer = fileServer });
                 }
             }
+            log(username + " has been subscribed to the file server for room '" + name + "'.");
         }
 
         public void Leave(string username)
@@ -129,6 +136,7 @@ namespace LobbyServer
             {
                 UserNotFoundFault fault = new UserNotFoundFault();
                 fault.problemType = "Target user not in lobby.";
+                log("Message '" + message + "' from '" + from + "' to '" + to + "' failed. " + fault.problemType);
                 throw new FaultException<UserNotFoundFault>(fault, new FaultReason("Target user not in lobby."));
             }
 
@@ -140,6 +148,7 @@ namespace LobbyServer
                 filteredTargets = new List<MessageServer>() { userConnections[to].MessageServer };
             }
             RelayMessage($"{from}: {message}", filteredTargets);
+            log("Message '" + message + "' from '" + from + "' to '" + to + "' sent.");
         }
 
         public void SendPublicMessage(string message, string from)
@@ -151,6 +160,8 @@ namespace LobbyServer
                 filteredTargets = userConnections.Where(i => !i.Key.Equals(from)).Select(d => d.Value.MessageServer).ToList();
             }
             RelayMessage($"{from}: {message}", filteredTargets);
+            log("Message '" + message + "' from '" + from + "' sent.");
+
         }
 
         private void RelayMessage(string message, List<MessageServer> targets)
@@ -168,17 +179,17 @@ namespace LobbyServer
             try
             {
                 files.Add(file.name, file);
-                Console.WriteLine("Added file.");
                 RelayFileChange();
             }
             catch (ArgumentException)
             {
-                Console.WriteLine("Failed to add file.");
-
                 InvalidFileFault fault = new InvalidFileFault();
                 fault.problemType = "File already exists.";
+                log("File '" + file + "' has failed to upload. " + fault.problemType);
                 throw new FaultException<InvalidFileFault>(fault, new FaultReason("File already exists."));
             }
+            log("File '" + file.name + "' has been uploaded.");
+
         }
 
         private void RelayFileChange()
@@ -216,6 +227,12 @@ namespace LobbyServer
                 fault.problemType = "File does not exist.";
                 throw new FaultException<InvalidFileFault>(fault, new FaultReason("File does not exist."));
             }
+        }
+
+        [MethodImpl(MethodImplOptions.Synchronized)]
+        private void log(string message)
+        {
+            Console.WriteLine(message);
         }
     }
 }

@@ -101,7 +101,7 @@ namespace LobbyCLient
                 //Set errorbox to hidden by default
                 ErrorBox.Visibility = Visibility.Collapsed;
 
-                //try joining with username
+                //try joining with username and start updating lobby data
                 lobbyInterface.JoinLobby(usernameBox.Text);
                 UpdateLobbyData();
 
@@ -124,20 +124,20 @@ namespace LobbyCLient
 
         private void logoutButton_Click(Object sender, RoutedEventArgs e)
         {
-            // Leave existing room
+            // Leave existing room by leaving the message proxy and file proxy
             messageProxy?.Leave();
             messageProxy = null;
             fileListProxy?.Leave();
             fileListProxy = null;
 
-            // Leave lobby
+            // Leave lobby and stop updating lobby data by setting logged in as false which stops loop
             loggedIn = false;
-            disableSendUI(true);
             lobbyInterface.LeaveLobby();
             LobbyListView.SelectedItem = null;
             usernameBox.Text = "";
 
-            // Collapse main window and make login screen visible
+            // Collapse main window and make login screen visible, disable the send ui for when user logs back in
+            disableSendUI(true);
             mainScreen.Visibility = Visibility.Collapsed;
             loginScreen.Visibility = Visibility.Visible;
         }
@@ -148,6 +148,10 @@ namespace LobbyCLient
 
             if(LobbyListView.SelectedItem != null)
             {
+                //remove private pop up if any
+                privateUserTo = "";
+                PrivateMessageToggle(false);
+
                 // Room selection
                 string userName = lobbyInterface.Username; // Lobby interface method to return username
                 string roomName = LobbyListView.SelectedItem.ToString();
@@ -179,7 +183,7 @@ namespace LobbyCLient
 
         private void newLobbyButton_Click(Object sender, RoutedEventArgs e)
         {
-            // Make lobby textbox visible
+            // Make lobby textbox visible when new lobby button is clicked
             newLobbyButton.Visibility = Visibility.Collapsed;
             lobbyNameBox.Text = "";
             NewLobbyOption.Visibility = Visibility.Visible;
@@ -189,7 +193,7 @@ namespace LobbyCLient
         {
             try
             {
-                //add new room
+                //add new room and update list view
                 lobbyInterface.MakeRoom(lobbyNameBox.Text);
                 List<string> roomNames;
                 List<uint> userCount;
@@ -209,30 +213,48 @@ namespace LobbyCLient
             }
         }
 
+        //checks if user has double clicked on a player name, if so message will be sent as private, if not public
         private void sendMsg_Click(Object sender, RoutedEventArgs e)
         {
-            string tempUser = privateUserTo;
-            PrivateMessageToggle(false);
+            string tempUser = privateUserTo; //for error message if player has left the room
+            PrivateMessageToggle(false); //set private message pop up as closed by default
             try
             {
+                //if private user var is not empty proceed with making pm pop up visible
                 if (!privateUserTo.Equals(""))
                 {
                     PrivateMessageToggle(true);
                 }
+
+                //send message, proxy will send as private if privateUserTo var is not empty
                 messageProxy.SendMessage(messageBox.Text, privateUserTo);
+
+                //reset ui so pop up is closed and message box is empty
                 PrivateMessageToggle(false);
                 messageBox.Text = "";
             }
             catch (FaultException<UserNotFoundFault>)
             {
+                //if user is no longer in the room, message proxy will throw fault and pop up will show error
                 PrivateMessagePopUpText.Dispatcher.BeginInvoke(new Action(() => { PrivateMessagePopUpText.Text = tempUser + " is not in the room. Message not sent."; }));
             }
-            catch (Exception) { }
+            catch (Exception ex) 
+            {
+                //catch any other errors and show as pop up
+                Dispatcher.Invoke(() =>
+                {
+                    MessageBox.Show(ex.Message);
+                });
+            }
+
+            //reset private user var back to empty
             privateUserTo = "";
         }
 
+        //when user selected in active user list, private user var will be set as user selected and private message pop up will become visible
         private void UserView_MouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
+            //only proceed is selected user isn't the user itself, otherwise set the var back to empty
             if (!activeUsersView.SelectedItem.ToString().Equals(usernameBox.Text))
             {
                 privateUserTo = activeUsersView.SelectedItem.ToString();
@@ -248,33 +270,60 @@ namespace LobbyCLient
 
         private void sendFile_Click(Object sender, RoutedEventArgs e)
         {
-            if (fileListProxy == null)
+            try
             {
-                MessageBox.Show("Please join a room before sending a file.");
+                if (fileListProxy == null)
+                {
+                    MessageBox.Show("Please join a room before sending a file.");
+                }
+                else
+                {
+                    fileListProxy.UploadFile();
+                }
             }
-            else
+            catch (FaultException<InvalidFileFault> ex)
             {
-                fileListProxy.UploadFile();
+                Dispatcher.Invoke(() =>
+                {
+                    MessageBox.Show(ex.Message);
+                });
+            }
+            catch (FaultException<InvalidRoomFault> ex)
+            {
+                Dispatcher.Invoke(() =>
+                {
+                    MessageBox.Show(ex.Message);
+                });
+            }
+            catch (Exception ex)
+            {
+                Dispatcher.Invoke(() =>
+                {
+                    MessageBox.Show(ex.Message);
+                });
             }
         }
 
+        //disables the send ui when user not in a room and displays welcome messsage to prompt user to select a room
         private void disableSendUI(Boolean option)
         {
             if (option)
             {
-                roomNameBox.Dispatcher.BeginInvoke(new Action(() => { roomNameBox.Text = "Welcome. Please select lobby to join."; }));
+                roomNameBox.Dispatcher.BeginInvoke(new Action(() => { roomNameBox.Text = "Welcome. Please select or create a lobby to join."; }));
             }
             sendMsgButton.Dispatcher.BeginInvoke(new Action(() => { sendMsgButton.IsEnabled = !option; }));
             sendFileButton.Dispatcher.BeginInvoke(new Action(() => { sendFileButton.IsEnabled = !option; }));
             messageBox.Dispatcher.BeginInvoke(new Action(() => {  messageBox.IsEnabled = !option; }));
         }
 
+        //cancels sending a private message when cancel button pressed
         private void CancelPrivateButton_Click(object sender, RoutedEventArgs e)
         {
             PrivateMessageToggle(false);
             privateUserTo = "";
         }
 
+        //controls visibility of the private message pop up box
         private void PrivateMessageToggle(Boolean option)
         {
             if (option)
@@ -288,6 +337,7 @@ namespace LobbyCLient
             }
         }
 
+        //clears message box when double clicked
         private void messageBox_MouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
             messageBox.Text = "";
