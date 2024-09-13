@@ -177,7 +177,8 @@ namespace LobbyCLient
                 string selectedFileName = filesView.SelectedItem.ToString();
                 downloadWindow = fileListProxy.DownloadWindow;
                 downloadWindow.StartDownload(selectedFileName);
-                downloadWindow.Show();
+                filesView.SelectedItem = null;
+                
             }
         }
 

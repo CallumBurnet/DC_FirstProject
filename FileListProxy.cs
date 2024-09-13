@@ -69,7 +69,7 @@ namespace LobbyClient
         {
             FetchNewFileList();
         }
-        public async Task DownloadFile(string fileName, IProgress<int> progress, CancellationToken token)
+        public async Task<bool> DownloadFile(string fileName, IProgress<int> progress, CancellationToken token)
         {
             Microsoft.Win32.SaveFileDialog saveFileDialog = new Microsoft.Win32.SaveFileDialog();
             saveFileDialog.FileName = fileName;
@@ -105,6 +105,11 @@ namespace LobbyClient
                         }
                     }
                 }, token);
+                return true;
+            }
+            else
+            {
+                return false;
             }
         }
 
