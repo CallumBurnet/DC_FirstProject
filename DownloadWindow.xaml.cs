@@ -36,16 +36,13 @@ namespace LobbyClient
             });
             try
             {
-                await DownloadFile(fileName, progress, cts.Token);
+                cts = new CancellationTokenSource();
+                await proxy.DownloadFile(fileName, progress, cts.Token, this);
                 downloadText.Text = "Done";
                 cancelOrDoneButton.Content = "Close";
             } catch (OperationCanceledException) {
                 MessageBox.Show("Download has been cancelled");
             }
-        }
-        private async Task DownloadFile(string fileName, IProgress<int> progress, CancellationToken token)
-        {
-            await proxy.DownloadFile(fileName, progress, token);
         }
        
         private void CancelDownload_Click(object sender, RoutedEventArgs e)
