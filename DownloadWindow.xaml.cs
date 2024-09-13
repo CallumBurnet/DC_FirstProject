@@ -49,6 +49,7 @@ namespace LobbyClient
             bool success = await proxy.DownloadFile(fileName, progress, token);
             if (success)
             {
+                
                 this.Show();
             }
 
@@ -58,7 +59,7 @@ namespace LobbyClient
         private void CancelDownload_Click(object sender, RoutedEventArgs e)
         {
             cts.Cancel();
-            this.Close();
+            this.Hide();
         }
     }
 }
