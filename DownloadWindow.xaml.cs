@@ -46,12 +46,8 @@ namespace LobbyClient
         }
         private async Task DownloadFile(string fileName, IProgress<int> progress, CancellationToken token)
         {
-            bool success = await proxy.DownloadFile(fileName, progress, token);
-            if (success)
-            {
-                
-                this.Show();
-            }
+            bool success = await proxy.DownloadFile(fileName, progress, token, this);
+            
 
 
         }
