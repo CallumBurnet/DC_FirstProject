@@ -82,7 +82,7 @@ namespace LobbyServer
                 foreach (Room room in rooms.Values) 
                 { 
                     room.Leave(username); 
-                    log("User \""+ username + "\" has been removed from room " + room.name);
+                    log("User \""+ username + "\" has been removed from room " + room.GetName());
                 }
             }
             lock (userConnectionsLock)

@@ -23,7 +23,7 @@ namespace LobbyServer
     internal class Room  // Won't move to DLL until we need it to be public
     {
         private readonly Lobby lobby;
-        public readonly string name;
+        private readonly string name;
         private readonly string owner;
         private readonly Dictionary<string, ServerStruct> userConnections = new Dictionary<string, ServerStruct>();
         private readonly Dictionary<string, RoomFile> files = new Dictionary<string, RoomFile>();
@@ -211,6 +211,9 @@ namespace LobbyServer
                 return files.Keys.ToList();
             }
         }
+
+        public string GetName()
+        { return name; }
 
         public RoomFile FetchFile(string filename)
         {
